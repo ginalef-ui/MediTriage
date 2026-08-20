@@ -4,8 +4,8 @@
 MediTriage
 
 ## Integrantes
-- Sofía Belén Zenteno Jaureguis
-- Nombre compañero
+- Sofia Belen Zenteno Jaureguis
+- Genessis Inalef Tapai
 
 ## Roles
 
