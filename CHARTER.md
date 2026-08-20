@@ -47,7 +47,7 @@ Desarrollar una plataforma inteligente de triaje médico que ayude a clasificar 
 
 ## Canal de Comunicación
 - WhatsApp
-- Teams
+- Meet
   
  
 
