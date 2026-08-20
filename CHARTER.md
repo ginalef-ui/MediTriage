@@ -4,7 +4,7 @@
 MediTriage
 
 ## Integrantes
-- Sofia Belen Zenteno Jaureguis
+- Sofia Zenteno Jaureguis
 - Genessis Inalef Tapay
 
 
