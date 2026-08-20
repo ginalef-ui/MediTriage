@@ -10,8 +10,6 @@ MediTriage
 
 ## Roles
 
-## Roles
-
 ### Product Owner (PO)
 **Sofía Belén Zenteno Jaureguis**
 
