@@ -11,7 +11,7 @@ MediTriage
 ## Roles
 
 ### Product Owner (PO)
-**Sofía Belén Zenteno Jaureguis**
+**Sofia Zenteno Jaureguis**
 
 Responsabilidades:
 - Priorizar funcionalidades y requerimientos.
@@ -21,7 +21,7 @@ Responsabilidades:
 - Validar que el producto entregue valor al usuario.
 
 ### QA Lead
-**Sofía Belén Zenteno Jaureguis**
+**Sofia Zenteno Jaureguis**
 
 Responsabilidades:
 - Verificar la calidad de los entregables.
