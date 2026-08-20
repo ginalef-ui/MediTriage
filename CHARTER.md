@@ -15,7 +15,6 @@ MediTriage
 Sofía Belén Zenteno Jaureguis
 
 Responsabilidades:
-
 - Priorizar funcionalidades.
 - Representar las necesidades del usuario.
 - Mantener el backlog.
@@ -24,10 +23,9 @@ Responsabilidades:
 
 ### Tech Lead
 
-[Nombre compañero/a]
+Genessis Inalef Tapay
 
 Responsabilidades:
-
 - Definir decisiones técnicas.
 - Coordinar el desarrollo.
 - Supervisar la arquitectura.
@@ -35,15 +33,11 @@ Responsabilidades:
  
 
 ## Misión
-
- 
 Desarrollar una plataforma inteligente de triaje médico que ayude a clasificar pacientes según el nivel de urgencia de atención.
 
  
 
 ## Reglas de Trabajo
-
- 
 - Mantener comunicación constante.
 - Participar en todas las reuniones del equipo.
 - Revisar el trabajo antes de entregarlo.
@@ -52,14 +46,12 @@ Desarrollar una plataforma inteligente de triaje médico que ayude a clasificar 
  
 
 ## Canal de Comunicación
-
 - WhatsApp
 - Teams
   
  
 
 ## Definition of Done (DoD)
-
 Una tarea se considera terminada cuando:
 - Está implementada.
 - Fue revisada por ambos integrantes.
