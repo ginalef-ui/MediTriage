@@ -5,7 +5,7 @@ MediTriage
 
 ## Integrantes
 - Sofia Belen Zenteno Jaureguis
-- Genessis Inalef Tapai
+- Genessis Inalef Tapay
 
 
 ## Roles
