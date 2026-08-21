@@ -6,12 +6,14 @@ MediTriage
 ## Integrantes
 - Sofia Zenteno Jaureguis
 - Genessis Inalef Tapay
-- Jose Villasmil 
+- Jose Villasmil
+- Vicente Cosio
+- Marcela Manzor 
 
 ## Roles
 
 ### Product Owner (PO)
-Sofia Zenteno 
+Sofia Zenteno
 
 Responsabilidades:
 
@@ -22,7 +24,7 @@ Coordinar la planificación del proyecto.
 Validar que el producto entregue valor al usuario.
 
 ### QA Lead
-Sofia Zenteno 
+Marcela Manzor
 
 Responsabilidades:
 
@@ -44,7 +46,7 @@ Resolver problemas técnicos del equipo.
 Promover buenas prácticas de programación.
 
 ### DevSecOps Lead
-José Villasmil
+Vicente Cosio
 
 Responsabilidades:
 
@@ -80,7 +82,7 @@ Desarrollar una plataforma inteligente de triaje médico que ayude a clasificar 
 ## Canal de Comunicación
 - WhatsApp
 - Meet
-  
+- Correo 
 
 ## Definition of Done (DoD)
 Una tarea se considera terminada cuando:
