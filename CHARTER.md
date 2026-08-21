@@ -46,7 +46,10 @@ Responsabilidades:
 - Resolver problemas técnicos del equipo.
 - Promover buenas prácticas de programación.
 
-### DevOps 
+### DevSecOps Lead
+
+DevOps
+Vicente Cosio
 
 - Gestionar integración y despliegue continuo (CI/CD).
 
@@ -55,6 +58,7 @@ Responsabilidades:
 - Automatizar procesos de desarrollo.
 
 SecOps
+Elias Galdames
 
 - Supervisar aspectos de seguridad.
 
