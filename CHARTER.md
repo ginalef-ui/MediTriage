@@ -8,7 +8,8 @@ MediTriage
 - Genessis Inalef Tapay
 - Jose Villasmil
 - Vicente Cosio
-- Marcela Manzor 
+- Marcela Manzor
+- Elias Galdames
 
 ## Roles
 
@@ -46,7 +47,8 @@ Responsabilidades:
 - Promover buenas prácticas de programación.
 
 ### DevSecOps Lead
-Vicente Cosio
+Vicente Cosio 
+Elias Galdames
 
 Responsabilidades:
 
