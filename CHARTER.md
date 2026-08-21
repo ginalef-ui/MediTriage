@@ -17,55 +17,55 @@ Sofia Zenteno
 
 Responsabilidades:
 
-Priorizar funcionalidades y requerimientos.
-Representar las necesidades de los usuarios.
-Mantener y actualizar el backlog.
-Coordinar la planificación del proyecto.
-Validar que el producto entregue valor al usuario.
+- Priorizar funcionalidades y requerimientos.
+- Representar las necesidades de los usuarios.
+- Mantener y actualizar el backlog.
+- Coordinar la planificación del proyecto.
+- Validar que el producto entregue valor al usuario.
 
 ### QA Lead
 Marcela Manzor
 
 Responsabilidades:
 
-Verificar la calidad de los entregables.
-Definir criterios de aceptación.
-Supervisar pruebas y validaciones.
-Identificar errores y oportunidades de mejora.
-Asegurar el cumplimiento de la Definition of Done (DoD).
+- Verificar la calidad de los entregables.
+- Definir criterios de aceptación.
+- Supervisar pruebas y validaciones.
+- Identificar errores y oportunidades de mejora.
+- Asegurar el cumplimiento de la Definition of Done (DoD).
 
 ### Tech Lead
 Genessis Inalef 
 
 Responsabilidades:
 
-Definir decisiones técnicas del proyecto.
-Diseñar la arquitectura inicial de la solución.
-Coordinar el desarrollo del sistema.
-Resolver problemas técnicos del equipo.
-Promover buenas prácticas de programación.
+- Definir decisiones técnicas del proyecto.
+- Diseñar la arquitectura inicial de la solución.
+- Coordinar el desarrollo del sistema.
+- Resolver problemas técnicos del equipo.
+- Promover buenas prácticas de programación.
 
 ### DevSecOps Lead
 Vicente Cosio
 
 Responsabilidades:
 
-Gestionar integración y despliegue continuo (CI/CD).
-Mantener la infraestructura y repositorio del proyecto.
-Supervisar aspectos de seguridad.
-Automatizar procesos de desarrollo.
-Mantener el control de versiones y la documentación técnica.
+- Gestionar integración y despliegue continuo (CI/CD).
+- Mantener la infraestructura y repositorio del proyecto.
+- Supervisar aspectos de seguridad.
+- Automatizar procesos de desarrollo.
+- Mantener el control de versiones y la documentación técnica.
 
 ### AI/Data Lead
 José Villasmil
 
 Responsabilidades:
 
-Definir el uso de inteligencia artificial en MediTriage.
-Gestionar los datos requeridos por el sistema.
-Evaluar herramientas y modelos de IA.
-Colaborar en el diseño de funcionalidades inteligentes.
-Verificar el uso adecuado de la información del proyecto.
+- Definir el uso de inteligencia artificial en MediTriage.
+- Gestionar los datos requeridos por el sistema.
+- Evaluar herramientas y modelos de IA.
+- Colaborar en el diseño de funcionalidades inteligentes.
+- Verificar el uso adecuado de la información del proyecto.
   
   
 ## Misión
