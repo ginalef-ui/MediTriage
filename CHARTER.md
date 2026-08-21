@@ -46,17 +46,21 @@ Responsabilidades:
 - Resolver problemas técnicos del equipo.
 - Promover buenas prácticas de programación.
 
-### DevSecOps Lead
-Vicente Cosio 
-Elias Galdames
-
-Responsabilidades:
+### DevOps 
 
 - Gestionar integración y despliegue continuo (CI/CD).
+
 - Mantener la infraestructura y repositorio del proyecto.
-- Supervisar aspectos de seguridad.
+
 - Automatizar procesos de desarrollo.
-- Mantener el control de versiones y la documentación técnica.
+
+SecOps
+
+- Supervisar aspectos de seguridad.
+
+- Mantener el control de versiones. (gestión de políticas de ramas, control de accesos a repositorios y auditoría de cambios).
+
+- Mantener la documentación técnica. (arquitectura segura, procedimientos operativos y guías de cumplimiento).
 
 ### AI/Data Lead
 José Villasmil
