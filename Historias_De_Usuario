@@ -1,1 +1,20 @@
+US-01: Registro de síntomas del paciente 
+Priorización MoSCoW: Must have (Obligatorio, pilar fundamental. Sin este nada funciona)
 
+Historia de Usuario (Formato INVEST):
+Como paciente, es de necesidad utilizar un formulario digital para ingresar mis registros y síntomas para entregar mi información relevante de salud antes de ser atendido.
+-
+2. US-02: Visualización de prioridad de pacientes (Clasificación Asistida)
+Actor (Impact Map): Enfermera.
+
+Priorización MoSCoW: Must have (Es el núcleo (MVP) de la solución de IA de MediTriage).
+
+Historia de Usuario (Formato INVEST): Como enfermera, quiero visualizar el sistema de clasificación asistida para priorizar a los pacientes de manera más rápida y eficiente según su nivel de urgencia
+-
+
+3. US-03: Consulta de historial clínico
+Actor (Impact Map): Médico.
+
+Priorización MoSCoW: Must have (Necesario para que el médico pueda atender al paciente ya priorizado).
+
+Historia de Usuario (Formato INVEST): Como médico, quiero visualizar el historial clínico digital con los datos de síntomas y clasificación previa para acceder rápidamente a la información del paciente y apoyar mi atención.
