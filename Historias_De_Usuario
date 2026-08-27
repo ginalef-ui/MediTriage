@@ -1,34 +1,44 @@
-1. US-01: Registro de síntomas del paciente 
+# 1. US-01: Registro de síntomas del paciente 
+
 Priorización MoSCoW: Must have (Obligatorio, pilar fundamental. Sin este nada funciona)
 
 Historia de Usuario (Formato INVEST):
 Como paciente, es de necesidad utilizar un formulario digital para ingresar mis registros y síntomas para entregar mi información relevante de salud antes de ser atendido.
--
-2. US-02: Visualización de prioridad de pacientes (Clasificación Asistida)
+
+---
+
+# 2. US-02: Visualización de prioridad de pacientes (Clasificación Asistida)
+
 Actor (Impact Map): Enfermera.
 
 Priorización MoSCoW: Must have (Es el núcleo (MVP) de la solución de IA de MediTriage).
 
-Historia de Usuario (Formato INVEST): Como enfermera, quiero visualizar el sistema de clasificación asistida para priorizar a los pacientes de manera más rápida y eficiente según su nivel de urgencia
--
+Historia de Usuario (Formato INVEST): Como enfermera, quiero visualizar el sistema de clasificación asistida para priorizar a los pacientes de manera más rápida y eficiente según su nivel de urgencia.
 
-3. US-03: Consulta de historial clínico
+---
+
+# 3. US-03: Consulta de historial clínico
+
 Actor (Impact Map): Médico.
 
 Priorización MoSCoW: Must have (Necesario para que el médico pueda atender al paciente ya priorizado).
 
 Historia de Usuario (Formato INVEST): Como médico, quiero visualizar el historial clínico digital con los datos de síntomas y clasificación previa para acceder rápidamente a la información del paciente y apoyar mi atención.
--
 
-4. US-04: Auditoria y revisión de registros clínicos.
+---
+
+# 4. US-04: Auditoria y revisión de registros clínicos
+
 Actor (Impact Map): Auditor clínico.
 
 Priorización MoSCoW: Must have (Requerido para asegurar la calidad y mejora continua).
 
 Historia de Usuario (Formato INVEST): Como auditor clínico, quiero acceder a un módulo de auditoría y revisión de registros clínicos, para supervisar y validar la calidad del proceso de clasificación asistida de los pacientes.
--
 
-5. US-05: Panel de administración y permiso.
+---
+
+# 5. US-05: Panel de administración y permiso
+
 Actor (Impact Map): Administrador.
 
 Priorización MoSCoW: Must have (escencial para gestionar los accesos, roles y la seguridad de la información).
