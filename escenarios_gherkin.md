@@ -6,23 +6,23 @@
 
 ## Escenario 1: Registro exitoso de síntomas
 
-Given el paciente se encuentra en el formulario digital de registro  
-When completa todos los campos obligatorios con información válida  
-And envía el formulario  
-Then el sistema registra correctamente los síntomas y datos del paciente
+**Given** - El paciente se encuentra en el formulario digital de registro  
+**When** - Completa todos los campos obligatorios con información válida  
+**And** - Envía el formulario  
+**Then** - El sistema registra correctamente los síntomas y datos del paciente
 
 ## Escenario 2: Registro con información opcional incompleta
 
-Given el paciente se encuentra en el formulario digital de registro  
-When completa todos los campos obligatorios  
-And deja vacíos algunos campos opcionales  
-Then el sistema permite registrar la información del paciente correctamente
+**Given** - El paciente se encuentra en el formulario digital de registro  
+**When** - Completa todos los campos obligatorios  
+**And** - Deja vacíos algunos campos opcionales  
+**Then** - El sistema permite registrar la información del paciente correctamente
 
 ## Escenario 3: Registro con campos obligatorios vacíos
 
-Given el paciente se encuentra en el formulario digital de registro  
-When intenta enviar el formulario sin completar todos los campos obligatorios  
-Then el sistema informa cuáles son los campos que deben ser completados para realizar el registro
+**Given** - El paciente se encuentra en el formulario digital de registro  
+**When** - Intenta enviar el formulario sin completar todos los campos obligatorios  
+**Then** - El sistema informa cuáles son los campos que deben ser completados para realizar el registro
 
 ---
 
@@ -30,23 +30,23 @@ Then el sistema informa cuáles son los campos que deben ser completados para re
 
 ## Escenario 1: Visualización correcta de la clasificación
 
-Given la enfermera ha iniciado sesión en el sistema  
-And existen pacientes registrados con diferentes niveles de urgencia  
-When accede al sistema de clasificación asistida  
-Then el sistema muestra a los pacientes según su nivel de prioridad
+**Given** - La enfermera ha iniciado sesión en el sistema  
+**And** - Existen pacientes registrados con diferentes niveles de urgencia  
+**When** - Accede al sistema de clasificación asistida  
+**Then** - El sistema muestra a los pacientes según su nivel de prioridad
 
 ## Escenario 2: Consulta sin pacientes pendientes
 
-Given la enfermera ha iniciado sesión en el sistema  
-And no existen pacientes pendientes de atención  
-When accede al sistema de clasificación asistida  
-Then el sistema informa que no existen pacientes pendientes
+**Given** - La enfermera ha iniciado sesión en el sistema  
+**And** - No existen pacientes pendientes de atención  
+**When** - Accede al sistema de clasificación asistida  
+**Then** - El sistema informa que no existen pacientes pendientes
 
 ## Escenario 3: Acceso sin permisos a la clasificación
 
-Given un usuario no cuenta con permisos de enfermera  
-When intenta acceder al sistema de clasificación asistida  
-Then el sistema deniega el acceso al módulo
+**Given** - Un usuario no cuenta con permisos de enfermera  
+**When** - Intenta acceder al sistema de clasificación asistida  
+**Then** - El sistema deniega el acceso al módulo
 
 ---
 
@@ -54,23 +54,23 @@ Then el sistema deniega el acceso al módulo
 
 ## Escenario 1: Visualización exitosa del historial clínico
 
-Given el médico ha iniciado sesión en el sistema  
-And el paciente posee información clínica registrada  
-When el médico consulta el historial del paciente  
-Then el sistema muestra los síntomas y la clasificación previa del paciente
+**Given** - El médico ha iniciado sesión en el sistema  
+**And** - El paciente posee información clínica registrada  
+**When** - El médico consulta el historial del paciente  
+**Then** - El sistema muestra los síntomas y la clasificación previa del paciente
 
 ## Escenario 2: Paciente sin historial clínico previo
 
-Given el médico ha iniciado sesión en el sistema  
-And el paciente no posee registros clínicos anteriores  
-When el médico consulta el historial del paciente  
-Then el sistema informa que no existen registros clínicos previos
+**Given** - El médico ha iniciado sesión en el sistema  
+**And** - El paciente no posee registros clínicos anteriores  
+**When** - El médico consulta el historial del paciente  
+**Then** - El sistema informa que no existen registros clínicos previos
 
 ## Escenario 3: Consulta de paciente no registrado
 
-Given el médico ha iniciado sesión en el sistema  
-When busca un paciente que no se encuentra registrado  
-Then el sistema informa que el paciente no fue encontrado
+**Given** - El médico ha iniciado sesión en el sistema  
+**When** - Busca un paciente que no se encuentra registrado  
+**Then** - El sistema informa que el paciente no fue encontrado
 
 ---
 
@@ -78,23 +78,23 @@ Then el sistema informa que el paciente no fue encontrado
 
 ## Escenario 1: Revisión exitosa de un registro clínico
 
-Given el auditor clínico ha iniciado sesión en el sistema  
-And existen registros clínicos disponibles para revisión  
-When selecciona un registro clínico  
-Then el sistema muestra la información necesaria para revisar el proceso de clasificación
+**Given** - El auditor clínico ha iniciado sesión en el sistema  
+**And** - Existen registros clínicos disponibles para revisión  
+**When** - Selecciona un registro clínico  
+**Then** - El sistema muestra la información necesaria para revisar el proceso de clasificación
 
 ## Escenario 2: Consulta sin registros disponibles
 
-Given el auditor clínico ha iniciado sesión en el sistema  
-And no existen registros clínicos disponibles para auditoría  
-When accede al módulo de auditoría  
-Then el sistema informa que no existen registros disponibles para revisar
+**Given** - El auditor clínico ha iniciado sesión en el sistema  
+**And** - No existen registros clínicos disponibles para auditoría  
+**When** - Accede al módulo de auditoría  
+**Then** - El sistema informa que no existen registros disponibles para revisar
 
 ## Escenario 3: Acceso no autorizado al módulo de auditoría
 
-Given un usuario no cuenta con permisos de auditor clínico  
-When intenta acceder al módulo de auditoría  
-Then el sistema deniega el acceso al módulo
+**Given** - Un usuario no cuenta con permisos de auditor clínico  
+**When** - Intenta acceder al módulo de auditoría  
+**Then** - El sistema deniega el acceso al módulo
 
 ---
 
@@ -102,19 +102,19 @@ Then el sistema deniega el acceso al módulo
 
 ## Escenario 1: Gestión exitosa de un usuario
 
-Given el administrador ha iniciado sesión en el sistema  
-When crea un nuevo usuario y le asigna un rol válido  
-Then el sistema registra al usuario con los permisos correspondientes
+**Given** - El administrador ha iniciado sesión en el sistema  
+**When** - Crea un nuevo usuario y le asigna un rol válido  
+**Then** - El sistema registra al usuario con los permisos correspondientes
 
 ## Escenario 2: Modificación de permisos de un usuario
 
-Given el administrador ha iniciado sesión en el sistema  
-And existe un usuario registrado  
-When modifica el rol o los permisos del usuario  
-Then el sistema actualiza correctamente los permisos asignados
+**Given** - El administrador ha iniciado sesión en el sistema  
+**And** - Existe un usuario registrado  
+**When** - Modifica el rol o los permisos del usuario  
+**Then** - El sistema actualiza correctamente los permisos asignados
 
 ## Escenario 3: Creación de usuario con información incompleta
 
-Given el administrador ha iniciado sesión en el sistema  
-When intenta crear un usuario sin completar los datos obligatorios  
-Then el sistema informa que debe completar la información requerida para proceder con la accion
+**Given** - El administrador ha iniciado sesión en el sistema  
+**When** - Intenta crear un usuario sin completar los datos obligatorios  
+**Then** - El sistema informa que debe completar la información requerida para proceder con la acciÓn
