@@ -34,23 +34,3 @@ flowchart TB
     SYS -->|"1. Anonimiza PII<br/>[REST / HTTP]"| OLL
     SYS -->|"2. Solicita razonamiento IA<br/>[HTTPS / API]"| LLM
     SYS -->|"3. Guarda/Consulta registros<br/>[SQL / REST]"| HIS
- ## 3. Descripción de Elementos
-
-### Usuarios (Personas)
-| Elemento | Tipo | Descripción |
-| :--- | :--- | :--- |
-| **Enfermero/a** | Persona | Registra los síntomas iniciales del paciente y realiza la entrevista asistida por la IA durante el triaje. |
-| **Médico/a** | Persona | Revisa los borradores de notas SOAP generados automáticamente, realiza diagnósticos finales y participa en el chat MDT en tiempo real. |
-| **Administrador** | Persona | Gestiona la creación de usuarios, asignación de roles (RBAC) y audita el uso del sistema. |
-
-### Sistema Principal
-| Elemento | Tipo | Descripción |
-| :--- | :--- | :--- |
-| **MediTriage** | Sistema | Plataforma web central encargada de orquestar el triaje, la anonimización de datos, la comunicación con los LLMs y la colaboración clínica. |
-
-### Sistemas Externos
-| Elemento | Tipo | Descripción |
-| :--- | :--- | :--- |
-| **Ollama Local (Llama 3.2)** | Sistema Externo | Modelo ejecutable en la red local del hospital encargada del *scrubbing* (eliminación) de PII para proteger la privacidad del paciente. |
-| **Cloud LLM API** | Sistema Externo | Modelos avanzados en la nube (ej. DeepSeek, OpenAI) encargados de la generación de razonamiento clínico sobre datos anonimizados. |
-| **HIS / Base de Datos** | Sistema Externo | Sistema de Información Hospitalaria y base de datos para la persistencia del historial clínico cifrado (AES-256). |
