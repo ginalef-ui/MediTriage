@@ -6,7 +6,7 @@
 4
  
 5
-El objetivo de este diagrama es ilustrar el límite del sistema **MediTriage**, mostrando cómo interactúan los usuarios clínicos con él y cómo se integra con los sistemas externos de soporte de IA e infraestructura hospitalaria.
+El objetivo de este diagrama es ilustrar el límite del sistema **MediTriage**, mostrando cómo interactúan los usuarios clínicos con él y cómo se integra con sistemas externos de soporte de IA e infraestructura hospitalaria.
 6
  
 7
@@ -20,154 +20,162 @@ El objetivo de este diagrama es ilustrar el límite del sistema **MediTriage**, 
 11
 ```mermaid
 12
-flowchart TB
+flowchart LR
 13
  
 14
-classDef person fill:#08427b,stroke:#073b6f,color:#fff;
+ENF["Enfermero/a"]
 15
-classDef system fill:#1168bd,stroke:#0e5296,color:#fff;
+MED["Médico/a"]
 16
-classDef extSystem fill:#686868,stroke:#4a4a4a,color:#fff;
+ADM["Administrador"]
 17
  
 18
-subgraph Actores["Usuarios del Sistema"]
+SYS["MediTriage
 19
-ENF["<b>Enfermero/a</b><br/><i>[Persona]</i><br/>Ingresa datos y realiza la<br/>entrevista de triaje guiada."]:::person
+Sistema de triaje asistido por IA"]
 20
-MED["<b>Médico/a</b><br/><i>[Persona]</i><br/>Valida notas SOAP y participa<br/>en salas de discusión MDT."]:::person
+ 
 21
-ADM["<b>Administrador</b><br/><i>[Persona]</i><br/>Gestiona accesos, roles y<br/>supervisa métricas del sistema."]:::person
+OLL["Ollama Local
 22
-end
+Anonimización PII"]
 23
  
 24
-SYS["<b>MediTriage</b><br/><i>[Sistema Principal]</i><br/>Sistema de triaje asistido por IA y<br/>colaboración médica en tiempo real."]:::system
+LLM["Cloud LLM API
 25
- 
+Generación de notas SOAP"]
 26
-subgraph Externos["Sistemas Externos"]
+ 
 27
-OLL["<b>Ollama Local (Llama 3.2)</b><br/><i>[Sistema Externo]</i><br/>Servicio local para anonimizar<br/>y filtrar PII."]:::extSystem
+HIS["HIS / Base de Datos Hospital"]
 28
-LLM["<b>Cloud LLM API</b><br/><i>[Sistema Externo]</i><br/>API de IA para análisis profundo<br/>y generación de notas SOAP."]:::extSystem
+ 
 29
-HIS["<b>HIS / BD Hospital</b><br/><i>[Sistema Externo]</i><br/>Sistema de información hospitalaria<br/>y persistencia cifrada."]:::extSystem
+ENF -->|"Realiza entrevista de triaje"| SYS
 30
-end
+MED -->|"Revisa notas SOAP y participa en MDT"| SYS
 31
- 
+ADM -->|"Administra usuarios y métricas"| SYS
 32
-ENF -->|"Realiza entrevista de triaje<br/>[HTTPS]"| SYS
+ 
 33
-MED -->|"Revisa SOAP / Chat MDT<br/>[HTTPS / WebSocket]"| SYS
+SYS -->|"Anonimiza datos"| OLL
 34
-ADM -->|"Administra el sistema<br/>[HTTPS]"| SYS
+SYS -->|"Solicita análisis clínico"| LLM
 35
- 
+SYS -->|"Guarda y consulta registros"| HIS
 36
-SYS -->|"1. Anonimiza PII<br/>[REST / HTTP]"| OLL
-37
-SYS -->|"2. Solicita razonamiento IA<br/>[HTTPS / API]"| LLM
-38
-SYS -->|"3. Guarda/Consulta registros<br/>[SQL / REST]"| HIS
-39
 ```
+37
+ 
+38
+---
+39
+ 
 40
- 
-41
----
-42
- 
-43
 ## 3. Descripción de Elementos
+41
+ 
+42
+### 3.1 Usuarios
+43
+ 
 44
- 
-45
-### 3.1. Usuarios (Personas)
-46
- 
-47
 | Actor | Descripción | Responsabilidad Principal |
-48
+45
 |---------|-------------|-------------------------|
+46
+| Enfermero/a | Personal clínico de primera línea. | Captura constantes vitales, síntomas y ejecuta el proceso de triaje. |
+47
+| Médico/a | Profesional médico tratante o especialista. | Valida y corrige las notas SOAP generadas por IA y participa en la colaboración clínica. |
+48
+| Administrador | Personal de TI u operaciones hospitalarias. | Gestiona accesos, roles, auditorías y métricas del sistema. |
 49
-| **Enfermero/a** | Personal clínico en primera línea de atención. | Captura de constantes vitales, sintomatología y ejecución del triaje. |
+ 
 50
-| **Médico/a** | Profesional médico tratante o especialista. | Validación o edición de la nota SOAP generada por IA y colaboración en tiempo real. |
+### 3.2 Sistemas
 51
-| **Administrador** | Personal de TI u operaciones hospitalarias. | Gestión de usuarios, asignación de roles y monitoreo de auditoría. |
+ 
 52
- 
+| Sistema | Tipo | Descripción |
 53
-### 3.2. Sistemas
+|----------|------|-------------|
 54
- 
+| MediTriage | Sistema Central | Plataforma web/móvil que gestiona el flujo de triaje asistido por IA y colaboración médica. |
 55
-| Sistema | Tipo | Descripción / Tecnología |
+| Ollama Local | Sistema Externo | Servicio local encargado de anonimizar la información sensible del paciente antes de enviarla a servicios externos. |
 56
-|----------|------|--------------------------|
+| Cloud LLM API | Sistema Externo | Servicio de inteligencia artificial utilizado para el razonamiento clínico y la generación de notas SOAP. |
 57
-| **MediTriage** | Sistema Central | Plataforma web/móvil que orquesta el flujo de triaje, anonimización, inferencia de IA y comunicación en tiempo real. |
+| HIS / Base de Datos Hospital | Sistema Externo | Sistema de información hospitalaria responsable del almacenamiento permanente de los registros clínicos. |
 58
-| **Ollama Local** | Sistema Externo | Instancia local (ej. Llama 3.2) encargada de detectar y remover Datos de Identificación Personal (PII) antes de cualquier envío a la nube. |
+ 
 59
-| **Cloud LLM API** | Sistema Externo | Modelo de lenguaje de alta capacidad utilizado para razonamiento clínico estructurado y redacción de notas SOAP. |
-60
-| **HIS / BD Hospital** | Sistema Externo | Sistema de Información Hospitalaria (registro clínico electrónico) donde se persisten los datos del paciente y fichas clínicas. |
-61
- 
-62
 ---
+60
+ 
+61
+## 4. Alcance del Sistema
+62
+ 
 63
- 
+### Dentro del alcance de MediTriage
 64
-## 4. Límites del Alcance (In Scope / Out of Scope)
+ 
 65
- 
+- Captura asistida de datos de triaje.
 66
-### Dentro del alcance (MediTriage)
+- Anonimización local de información sensible.
 67
- 
+- Generación y edición de notas SOAP.
 68
-- Interfaz de captura de triaje asistida.
+- Comunicación en tiempo real mediante salas MDT.
 69
-- Pipeline de sanitización de datos (anonimización local).
+- Gestión de usuarios y permisos.
 70
-- Generación y edición colaborativa de notas SOAP.
+ 
 71
-- Chat y salas MDT en tiempo real mediante WebSockets.
+### Fuera del alcance
 72
  
 73
-### Fuera del alcance (Sistemas Externos)
+- Administración histórica de fichas clínicas a largo plazo (HIS).
 74
- 
+- Entrenamiento de modelos de inteligencia artificial.
 75
-- Gestión centralizada de fichas del paciente a largo plazo (delegado al **HIS**).
+- Autenticación corporativa externa (Active Directory, OAuth u otros servicios institucionales).
 76
-- Entrenamiento o fine-tuning de los modelos de IA (delegado a los proveedores de **LLM**).
+ 
 77
-- Autenticación corporativa centralizada (si se integra con Active Directory u OAuth del hospital).
+---
 78
  
 79
----
+## 5. Decisiones de Arquitectura
 80
  
 81
-## 5. Decisiones Clave de Arquitectura (Nivel Contexto)
+### Privacidad y Cumplimiento
 82
  
 83
-1. **Privacidad y Cumplimiento (HIPAA/GDPR):**
+Se adopta una arquitectura híbrida de inteligencia artificial. Los datos identificables del paciente son anonimizados localmente antes de enviarse a servicios de IA en la nube.
 84
-Se optó por una arquitectura híbrida de IA. Ningún dato identificable del paciente sale de la red local del hospital hacia servicios cloud.
-85
  
+85
+### Comunicación en Tiempo Real
 86
-2. **Comunicación Bidireccional:**
+ 
 87
-El uso de WebSockets es indispensable para la colaboración médica sincrónica durante emergencias o discusiones multidisciplinarias.
+La colaboración entre profesionales clínicos se realiza mediante mecanismos de comunicación en tiempo real para facilitar la toma de decisiones durante emergencias y reuniones multidisciplinarias.
+88
+ 
+89
+### Integración Hospitalaria
+90
+ 
+91
+La persistencia de la información clínica se delega al sistema HIS institucional, evitando duplicidad de registros y manteniendo la integración con la infraestructura existente.
