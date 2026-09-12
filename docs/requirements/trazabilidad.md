@@ -1,249 +1,151 @@
-# Trazabilidad S02 → S03
-## Proyecto: MediTriage
+# Trazabilidad S03 → S04
+# Proyecto: MediTriage
 
-Esta trazabilidad permite relacionar los requisitos definidos en la fase de Ingeniería de Requisitos (S02) con los componentes arquitectónicos definidos en la fase de Arquitectura de Software (S03).
-
----
-
-## US-01: Registro de síntomas del paciente
-
-### S02
-
-Actor:
-- Paciente
-
-Impacto:
-- Entregar información relevante de salud antes de ser atendido.
-
-Deliverable:
-- Formulario digital de registro de pacientes y síntomas.
-
-### S03
-
-Contenedores relacionados:
-- Frontend Web
-- Backend API
-- Base de Datos
-
-Justificación:
-Permite registrar, validar y almacenar los síntomas ingresados por el paciente.
+Esta sección relaciona la arquitectura definida en la S03 con las decisiones cloud tomadas en la S04.
 
 ---
 
-## US-02: Visualización de prioridad de pacientes (Clasificación asistida)
-
-### S02
-
-Actor:
-- Enfermera
-
-Impacto:
-- Priorizar pacientes de manera rápida y eficiente.
-
-Deliverable:
-- Sistema de clasificación asistida.
+## Frontend Web
 
 ### S03
 
-Contenedores relacionados:
-- Frontend Web
-- Backend API
-- Motor de Clasificación IA
+Tecnología:
+- React
+
+Función:
+- Interfaz para pacientes, enfermeras, médicos y administradores.
+
+### S04
+
+Servicios Cloud Asociados:
+- Azure Container Apps
 
 Justificación:
-Permite generar y visualizar la prioridad asignada a cada paciente.
+Permite desplegar la aplicación Frontend sin administrar infraestructura propia.
 
 ---
 
-## US-03: Consulta de historial clínico
-
-### S02
-
-Actor:
-- Médico
-
-Impacto:
-- Acceder rápidamente a la información clínica del paciente.
-
-Deliverable:
-- Historial clínico digital.
+## Backend API
 
 ### S03
 
-Contenedores relacionados:
-- Frontend Web
-- Backend API
-- Base de Datos
+Tecnología:
+- Node.js + Express
+
+Función:
+- Implementar la lógica de negocio del sistema MediTriage.
+
+### S04
+
+Servicios Cloud Asociados:
+- Azure Container Apps
 
 Justificación:
-Permite consultar antecedentes clínicos y clasificaciones previas.
+Permite desplegar el Backend y escalar automáticamente según la demanda.
 
 ---
 
-## US-04: Auditoría y revisión de registros clínicos
-
-### S02
-
-Actor:
-- Auditor Clínico
-
-Impacto:
-- Supervisar y validar la calidad del proceso de clasificación.
-
-Deliverable:
-- Módulo de auditoría y revisión clínica.
+## Base de Datos Clínica
 
 ### S03
 
-Contenedores relacionados:
-- Backend API
-- Base de Datos
+Tecnología:
+- PostgreSQL
+
+Función:
+- Almacenar pacientes, síntomas, historiales clínicos y usuarios.
+
+### S04
+
+Servicios Cloud Asociados:
+- Azure Database for PostgreSQL
 
 Justificación:
-Permite revisar registros históricos y verificar decisiones tomadas por el sistema.
+Proporciona persistencia de datos, respaldos automáticos y alta disponibilidad.
 
 ---
 
-## US-05: Panel de administración y permisos
-
-### S02
-
-Actor:
-- Administrador
-
-Impacto:
-- Garantizar el correcto funcionamiento y seguridad del sistema.
-
-Deliverable:
-- Panel de administración de usuarios y permisos.
+## Módulo de Auditoría
 
 ### S03
 
-Contenedores relacionados:
-- Frontend Web
-- Backend API
-- Base de Datos
+Función:
+- Registrar acciones críticas y decisiones clínicas.
+
+### S04
+
+Servicios Cloud Asociados:
+- Azure SQL Database Ledger
 
 Justificación:
-Permite gestionar usuarios, perfiles, roles y permisos de acceso.
+Permite mantener registros verificables e inmutables para auditoría.
 
 ---
 
-## US-06: Notificación de estado de espera en tiempo real
-
-### S02
-
-Actor:
-- Paciente
-
-Impacto:
-- Mantener informado al paciente durante la espera.
-
-Deliverable:
-- Sistema de notificaciones.
+## Motor de Clasificación IA
 
 ### S03
 
-Contenedores relacionados:
-- Frontend Web
-- Backend API
+Tecnología:
+- Python
+
+Función:
+- Clasificar pacientes según síntomas y criterios de urgencia.
+
+### S04
+
+Servicios Cloud Asociados:
+- Azure Machine Learning
 
 Justificación:
-Permite comunicar al paciente el tiempo estimado de espera y cambios en su estado.
+Permite entrenar, desplegar y administrar modelos de IA en un entorno gestionado.
 
 ---
 
-## US-07: Reevaluación automática por tiempo de espera excedido
-
-### S02
-
-Actor:
-- Enfermera
-
-Impacto:
-- Detectar pacientes que requieren reevaluación.
-
-Deliverable:
-- Sistema de alertas.
+## Gestión de Calidad y Despliegue
 
 ### S03
 
-Contenedores relacionados:
-- Backend API
-- Motor de Clasificación IA
-- Base de Datos
+Función:
+- Integración continua y validación del sistema.
+
+### S04
+
+Servicios Cloud Asociados:
+- GitHub Actions
 
 Justificación:
-Permite generar alertas cuando un paciente supera los tiempos máximos de espera establecidos.
+Automatiza pruebas, validaciones y despliegues del proyecto.
 
 ---
 
-## US-08: Autenticación de doble factor
+# Resumen de Evolución
 
-### S02
+S02
+↓
+Impact Map
 
-Actor:
-- Administrador
+↓
 
-Impacto:
-- Aumentar la seguridad de acceso al sistema.
+Historias de Usuario
 
-Deliverable:
-- Sistema de autenticación reforzada.
+↓
+S03
 
-### S03
+Arquitectura Monolito Modular
 
-Contenedores relacionados:
-- Frontend Web
-- Backend API
+C4 Nivel 1
 
-Justificación:
-Permite implementar autenticación de dos factores para proteger la información clínica.
+C4 Nivel 2
 
----
+↓
+S04
 
-## US-09: Registro y categorización de cancelaciones voluntarias
+Azure
 
-### S02
+Servicios Gestionados
 
-Actor:
-- Enfermera
+12-Factor
 
-Impacto:
-- Mantener actualizada la lista de pacientes en espera.
-
-Deliverable:
-- Registro de cancelaciones.
-
-### S03
-
-Contenedores relacionados:
-- Frontend Web
-- Backend API
-- Base de Datos
-
-Justificación:
-Permite registrar y almacenar las cancelaciones de atención realizadas por los pacientes.
-
----
-
-## US-10: Selección de idioma en el formulario del paciente
-
-### S02
-
-Actor:
-- Paciente
-
-Impacto:
-- Mejorar la accesibilidad del sistema.
-
-Deliverable:
-- Formulario multilenguaje.
-
-### S03
-
-Contenedores relacionados:
-- Frontend Web
-
-Justificación:
-Permite adaptar la interfaz de usuario a distintos idiomas de forma dinámica.
+ADR-0003
+``
