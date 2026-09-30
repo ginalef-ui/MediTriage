@@ -1,9 +1,9 @@
 {
-  "patientRut": "12345678-9",
-  "symptoms": "Dolor de cabeza intenso, fiebre de 39 grados, rigidez en el cuello.",
-  "vitalSigns": {
-    "heartRate": 110,
-    "bloodPressure": "120/80"
+  "RUT": "12345678-9",
+  "Sintomas": "Dolor de cabeza intenso, fiebre de 39 grados, rigidez en el cuello.",
+  "SignosVitales": {
+    "Pulsaciones": 110,
+    "PresionSanguinea": "120/80"
   }
 }
 
