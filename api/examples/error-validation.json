@@ -1,0 +1,8 @@
+{
+  "type": "https://api.meditriage.cl/errors/validation",
+  "titulo": "Error de validación",
+  "estatus": 422,
+  "detalles": "El RUT ingresado no cumple con el formato requerido.",
+  "instancias": "/v1/triage",
+  "trace_id": "trace-987654321"
+}
