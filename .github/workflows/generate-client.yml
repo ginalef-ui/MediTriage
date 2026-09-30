@@ -1,0 +1,32 @@
+name: Generar Cliente API
+
+on:
+  push:
+    paths:
+      - 'api/openapi.yaml'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Crear directorio destino
+        run: mkdir -p packages/api-client
+
+      - name: Generar cliente con OpenAPI Generator
+        uses: openapi-generators/openapitools-generator-action@v1
+        with:
+          generator: typescript-fetch
+          openapi-file: api/openapi.yaml
+          command-args: -o packages/api-client
+
+      - name: Commit y push del cliente generado
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add packages/api-client/
+          git commit -m "chore: autogenerar cliente TypeScript" || echo "No hay cambios para commitear"
+          git push
