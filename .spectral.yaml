@@ -1,7 +1,7 @@
 extends: ["spectral:oas"]
-rules:
+reglas:
   operation-operationId: error
-  operation-description: warn
+  operation-descripcion: warn
   info-contact: off
   path-params: error
   no-eval-in-markdown: warn
