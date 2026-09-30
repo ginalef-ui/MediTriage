@@ -5,6 +5,9 @@ on:
     paths:
       - 'api/openapi.yaml'
   workflow_dispatch:
+  
+permissions:
+  contents: write
 
 jobs:
   generate:
