@@ -136,20 +136,20 @@ components:
     TriageInput:
       type: object
       required:
-        - patientRut
-        - symptoms
+        - RUT
+        - Sintomas
       properties:
-        patientRut:
+        RUT:
           type: string
           pattern: '^\d{7,8}-[0-9K]$'
-        symptoms:
+        Sintomas:
           type: string
-        vitalSigns:
+        SignosVitales:
           type: object
           properties:
-            heartRate:
+            Pulsaciones:
               type: integer
-            bloodPressure:
+            PresionSanguinea:
               type: string
 
     # Schema 2: Output
@@ -159,7 +159,7 @@ components:
         id:
           type: string
           format: uuid
-        patientRut:
+        pacienterut:
           type: string
         esiLevel:
           type: integer
@@ -167,7 +167,7 @@ components:
           maximum: 5
         status:
           type: string
-        createdAt:
+        fecha:
           type: string
           format: date-time
 
@@ -186,19 +186,19 @@ components:
       type: object
       required:
         - type
-        - title
-        - status
+        - titulo
+        - estatus
       properties:
         type:
           type: string
           format: uri
-        title:
+        titulo:
           type: string
-        status:
+        estatus:
           type: integer
-        detail:
+        detalles:
           type: [string, null]
-        instance:
+        instancias:
           type: string
           format: uri
         trace_id:
