@@ -1,0 +1,50 @@
+// DER MediTriage - Contexto Clínico (Variables en Español)
+
+Table Atencion {
+  id uuid [primary key, note: 'ID único de la atención']
+  paciente_rut varchar [ref: > Paciente.RUT, note: 'Referencia al paciente']
+  personal_id uuid [ref: > Personal.id, note: 'Personal médico asignado']
+  estatus varchar [note: 'Ej: WAITING, TRIAGED, ATTENDED']
+  fecha timestamp
+}
+
+Table Paciente {
+  RUT varchar [primary key, note: 'RUT validado del paciente']
+  nombre varchar
+  fecha_nacimiento date
+  condiciones_cronicas text [note: 'Enfermedades previas relevantes']
+}
+
+Table SignosVitales {
+  id uuid [primary key]
+  atencion_id uuid [ref: - Atencion.id, note: 'Relación 1 a 1 con la Atención']
+  PresionSanguinea varchar
+  Pulsaciones int
+  temperatura decimal
+  saturacion_oxigeno int
+  fecha timestamp
+}
+
+Table Sintomas {
+  id uuid [primary key]
+  atencion_id uuid [ref: > Atencion.id, note: 'Una Atención puede tener varios síntomas']
+  descripcion text [note: 'Descripción de Sintomas reportada']
+  severidad varchar
+  fecha timestamp
+}
+
+Table DecisionTriage {
+  id uuid [primary key]
+  atencion_id uuid [ref: - Atencion.id, note: 'Relación 1 a 1 con la Atención']
+  nivelEsi int [note: 'Nivel ESI del 1 al 5 sugerido por la IA']
+  justificacion_ai text [note: 'Justificación del modelo IA']
+  confirmado_por uuid [ref: > Personal.id, note: 'Enfermera que valida la categoría']
+  fecha timestamp
+}
+
+Table Personal {
+  id uuid [primary key]
+  RUT varchar
+  rol varchar [note: 'Ej: ENFERMERA, MEDICO']
+  nombre varchar
+}
