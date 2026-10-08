@@ -2,7 +2,7 @@
 
 A continuación se detallan 12 eventos del ciclo de vida principal del paciente en el sistema MediTriage. Todos los eventos son inmutables e incluyen un `trace_id` para garantizar la auditoría y trazabilidad en toda la arquitectura event-driven.
 
-### 1. patient.registered
+### 1. paciente.registrado
 * **Descripción:** Un nuevo paciente ha sido registrado en el sistema con su RUT validado y consentimiento firmado.
 * **Versión:** 1.0
 * **Productor:** Contexto de Identidad
@@ -16,7 +16,7 @@ A continuación se detallan 12 eventos del ciclo de vida principal del paciente 
 * **Consumidores:** Base de Datos PostgreSQL
 * **Campos:** `event_id`, `trace_id`, `encounter_id`, `RUT`, `timestamp`
 
-### 3. symptoms.reported
+### 3. sintomas.reportados
 * **Descripción:** El paciente completa el formulario digital reportando sus síntomas.
 * **Versión:** 1.0
 * **Productor:** Contexto Clínico (Frontend Paciente)
@@ -58,28 +58,28 @@ A continuación se detallan 12 eventos del ciclo de vida principal del paciente 
 * **Consumidores:** Redis (Tablero de Sala de Espera), Contexto de Auditoría
 * **Campos:** `event_id`, `trace_id`, `encounter_id`, `nivelEsiOriginal`, `nivelEsiNuevo`, `motivoModificacion`, `enfermera_id`, `timestamp`
 
-### 9. patient.queued
+### 9. paciente.cola
 * **Descripción:** El paciente entra oficialmente a la cola de prioridad de la sala de espera.
 * **Versión:** 1.0
 * **Productor:** Contexto Clínico
 * **Consumidores:** Redis (Frontend Enfermera / Sala de Espera)
 * **Campos:** `event_id`, `trace_id`, `encounter_id`, `nivelEsi`, `estado` ("WAITING"), `timestamp`
 
-### 10. patient.called
+### 10. paciente.llamado
 * **Descripción:** El médico llama al paciente desde el tablero dinámico a su box de atención.
 * **Versión:** 1.0
 * **Productor:** Contexto Clínico (Médico)
 * **Consumidores:** Pantallas de Sala de Espera
 * **Campos:** `event_id`, `trace_id`, `encounter_id`, `medico_id`, `boxAsignado`, `timestamp`
 
-### 11. history.consulted
+### 11. historial.visto
 * **Descripción:** El médico visualiza el historial clínico previo del paciente.
 * **Versión:** 1.0
 * **Productor:** Contexto Clínico (Médico)
 * **Consumidores:** Contexto de Auditoría
 * **Campos:** `event_id`, `trace_id`, `RUT`, `medico_id`, `timestamp`
 
-### 12. patient.attended
+### 12. paciente.atendido
 * **Descripción:** Finaliza la atención médica de urgencia del paciente.
 * **Versión:** 1.0
 * **Productor:** Contexto Clínico (Médico)
