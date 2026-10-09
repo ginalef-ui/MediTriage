@@ -1,0 +1,202 @@
+# ADR-0004: Estrategia de Datos y Eventos de MediTriage
+
+## Estado
+
+Aceptado
+
+---
+
+## Contexto
+
+MediTriage es una plataforma de triaje médico asistido por inteligencia artificial cuyo objetivo es reducir los tiempos de espera de los pacientes mediante una clasificación rápida y eficiente de la urgencia médica.
+
+La solución está construida sobre una arquitectura Monolito Modular desplegada en Microsoft Azure y organiza su lógica de negocio mediante los módulos de Triaje, Clínico, Administración, Auditoría y Notificaciones.
+
+Durante esta etapa fue necesario definir:
+
+- La estrategia de persistencia de datos.
+- El mecanismo de intercambio de eventos.
+- Los patrones de consistencia y desacoplamiento.
+- La estructura de los bounded contexts del dominio.
+
+Los atributos de calidad priorizados por el proyecto son:
+
+- Seguridad.
+- Disponibilidad.
+- Rendimiento.
+
+---
+
+## Alternativas Consideradas
+
+### Persistencia Relacional (PostgreSQL)
+
+Motor relacional orientado a transacciones ACID, integridad referencial y consultas complejas.
+
+### Persistencia Documental (MongoDB)
+
+Base documental flexible para almacenamiento semi-estructurado.
+
+### Persistencia Key-Value (Redis)
+
+Motor orientado a cache y datos temporales de alta velocidad.
+
+---
+
+## Decisión de Persistencia
+
+Se adopta PostgreSQL como base de datos principal de MediTriage.
+
+Redis podrá utilizarse posteriormente para escenarios de cache y visualización en tiempo real.
+
+Además, Azure SQL Database Ledger será utilizado para mantener registros de auditoría verificables e inmutables.
+
+---
+
+## Justificación
+
+PostgreSQL fue seleccionado debido a que:
+
+- Permite transacciones ACID para información clínica sensible.
+- Facilita relaciones entre pacientes, encuentros clínicos, síntomas y decisiones de triage.
+- Garantiza integridad referencial.
+- Soporta auditoría y generación de reportes.
+- Se encuentra alineado con Azure Database for PostgreSQL definido previamente en la arquitectura.
+
+Azure SQL Database Ledger fue incorporado para garantizar trazabilidad e inmutabilidad de registros asociados a auditoría clínica y decisiones generadas por inteligencia artificial.
+
+---
+
+## Decisión de Broker de Eventos
+
+Se selecciona Apache Kafka como broker principal para la arquitectura basada en eventos.
+
+---
+
+## Justificación del Broker
+
+Kafka fue seleccionado porque:
+
+- Permite almacenar eventos clínicos de forma persistente.
+- Facilita el replay de eventos para auditoría.
+- Es compatible con arquitecturas event-driven.
+- Soporta escalabilidad horizontal.
+- Permite desacoplar productores y consumidores de eventos.
+
+Los eventos principales del sistema incluyen:
+
+- paciente.registrado
+- encounter.started
+- sintomas.reportados
+- vitals.captured
+- triage.requested
+- triage.completed
+- triage.confirmed
+- triage.modified
+- paciente.cola
+- paciente.llamado
+- historial.visto
+- paciente.atendido
+
+---
+
+## Patrones Aplicados
+
+### CQRS
+
+Se adopta CQRS para separar operaciones de lectura y escritura.
+
+Justificación:
+
+- Las consultas clínicas poseen necesidades distintas a las operaciones transaccionales.
+- Permite optimizar las vistas utilizadas por médicos y enfermería.
+
+### Outbox Pattern
+
+Se adopta Outbox para garantizar consistencia entre PostgreSQL y Kafka.
+
+Justificación:
+
+- Evita pérdida de eventos.
+- Reduce el problema de doble escritura.
+- Garantiza que los eventos publicados correspondan a transacciones confirmadas.
+
+### Saga
+
+No se implementará en esta etapa.
+
+Justificación:
+
+- El MVP no requiere procesos distribuidos complejos.
+- Aumentaría innecesariamente la complejidad del sistema.
+
+### Event Sourcing
+
+No se implementará inicialmente.
+
+Justificación:
+
+- La auditoría requerida puede satisfacerse mediante Azure SQL Database Ledger.
+- El proyecto no requiere reconstrucción completa del estado a partir de eventos.
+
+---
+
+## Bounded Contexts Considerados
+
+### Contexto de Identidad
+
+Responsable de pacientes, usuarios, roles y datos de identificación.
+
+### Contexto Clínico
+
+Responsable de síntomas, signos vitales, encuentros clínicos e historial médico.
+
+### Contexto de Auditoría
+
+Responsable de la trazabilidad y revisión de acciones relevantes del sistema.
+
+### Contexto de Administración
+
+Responsable de usuarios, permisos y control de acceso.
+
+### Contexto de Notificaciones
+
+Responsable de comunicaciones y actualizaciones relacionadas con el flujo de atención.
+
+---
+
+## Consecuencias Positivas
+
+- Consistencia transaccional mediante PostgreSQL.
+- Trazabilidad clínica fortalecida mediante Azure SQL Database Ledger.
+- Arquitectura preparada para integración basada en eventos.
+- Capacidad de replay y auditoría mediante Kafka.
+- Mejor desacoplamiento entre módulos del sistema.
+- Escalabilidad futura sin modificar la arquitectura principal.
+
+---
+
+## Consecuencias Negativas
+
+- Mayor complejidad operativa debido a Kafka.
+- Necesidad de gestionar consistencia eventual.
+- Curva de aprendizaje asociada a CQRS y Outbox.
+- Mayor número de componentes tecnológicos dentro de la solución.
+
+---
+
+## Trade-Offs
+
+El equipo acepta una mayor complejidad de diseño y operación a cambio de mejorar la trazabilidad, escalabilidad y capacidad de evolución del sistema.
+
+Se prioriza la consistencia clínica mediante PostgreSQL, mientras que los eventos de dominio permiten desacoplar procesos y facilitar integraciones futuras.
+
+---
+
+## Decisión Final
+
+MediTriage utilizará PostgreSQL como motor principal de persistencia, Azure SQL Database Ledger para auditoría clínica y Apache Kafka como broker de eventos.
+
+La solución adoptará los patrones CQRS y Outbox para soportar el intercambio seguro y consistente de eventos entre los distintos contextos del dominio.
+
+Esta decisión proporciona un equilibrio adecuado entre simplicidad, trazabilidad, rendimiento y capacidad de crecimiento para el Producto Mínimo Viable (MVP).
