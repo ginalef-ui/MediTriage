@@ -1,16 +1,27 @@
 # C4 Nivel 2 — Diagrama de Contenedores MediTriage
 
-## Propósito
+## 1. Propósito
 
-El diagrama C4 de Nivel 2 representa los principales contenedores que conforman la solución MediTriage, mostrando cómo se relacionan entre sí, con los usuarios y con los sistemas externos.
+El diagrama C4 de Nivel 2 representa la arquitectura de contenedores de MediTriage, sus tecnologías principales y las relaciones entre los usuarios, la aplicación, las bases de datos, el motor de inteligencia artificial y el broker de eventos.
 
-La arquitectura definida para MediTriage corresponde a un **Monolito Modular**, donde las funcionalidades principales se organizan en módulos dentro de una misma aplicación Backend/API.
+MediTriage utiliza una arquitectura de **Monolito Modular**, desplegada en Microsoft Azure. La lógica de negocio se organiza en módulos que comparten una aplicación Backend/API, mientras que la persistencia y el intercambio de eventos se apoyan en servicios específicos.
 
-La solución se despliega utilizando **Microsoft Azure** y servicios gestionados para reducir la complejidad operativa y facilitar la escalabilidad, persistencia, auditoría e integración con inteligencia artificial.
+Las decisiones arquitectónicas consideradas son:
+
+* **Proveedor cloud:** Microsoft Azure.
+* **Estilo arquitectónico:** Monolito Modular.
+* **Base de datos principal:** Azure Database for PostgreSQL.
+* **Auditoría:** Azure SQL Database Ledger.
+* **Inteligencia artificial:** Azure Machine Learning.
+* **Broker de eventos:** Apache Kafka.
+* **Patrones de consistencia:** Outbox.
+* **Patrón de consultas y comandos:** CQRS.
+* **Despliegue:** Azure Container Apps.
+* **Integración y despliegue continuo:** GitHub Actions.
 
 ---
 
-## Diagrama de Contenedores
+## 2. Diagrama de contenedores
 
 ```mermaid
 flowchart TB
@@ -22,376 +33,426 @@ flowchart TB
     auditor["Auditor clínico"]
     admin["Administrador"]
 
-    %% Sistema principal
-    frontend["Frontend Web / Móvil<br/>Interfaz de usuario<br/>HTML / CSS / JavaScript"]
+    %% Aplicación
+    frontend["Frontend Web / Móvil<br/>Interfaz de usuario"]
 
     backend["Backend / API<br/>Monolito Modular<br/>Node.js + Express"]
 
-    %% Módulos internos del monolito
-    triaje["Módulo de Triaje<br/>Registro y clasificación de síntomas"]
-    clinico["Módulo Clínico<br/>Historias y registros clínicos"]
-    auditoria["Módulo de Auditoría<br/>Trazabilidad y revisión"]
-    administracion["Módulo de Administración<br/>Usuarios y permisos"]
-    notificaciones["Módulo de Notificaciones<br/>Estado y reevaluaciones"]
+    %% Módulos lógicos del backend
+    subgraph MODULOS["Módulos lógicos del Monolito Modular"]
+        identidad["Módulo de Identidad"]
+        triaje["Módulo de Triaje"]
+        clinico["Módulo Clínico"]
+        administracion["Módulo de Administración"]
+        auditoria["Módulo de Auditoría"]
+        notificaciones["Módulo de Notificaciones"]
+    end
 
     %% Persistencia
-    postgres[("Azure Database for PostgreSQL<br/>Base de datos principal")]
+    postgres[("Azure Database for PostgreSQL<br/>Persistencia principal")]
 
-    ledger[("Azure SQL Database Ledger<br/>Registro de auditoría inmutable")]
+    outbox[("Tabla outbox_events<br/>Dentro de PostgreSQL")]
 
-    %% IA
-    aml["Azure Machine Learning<br/>Motor de clasificación asistida"]
+    ledger[("Azure SQL Database Ledger<br/>Auditoría verificable e inmutable")]
 
-    %% Sistema hospitalario externo
-    his["HIS / BD Hospital<br/>Sistema externo hospitalario"]
+    %% Eventos
+    relay["Proceso Relay<br/>Publicación asíncrona de eventos"]
 
-    %% Despliegue / infraestructura
-    container["Azure Container Apps<br/>Despliegue y escalamiento"]
+    kafka[("Apache Kafka<br/>Broker de eventos")]
 
-    %% CI/CD
-    github["GitHub Actions<br/>Integración y despliegue continuo"]
+    %% Inteligencia artificial
+    ia["Azure Machine Learning<br/>Motor de clasificación asistida"]
 
-    %% Relaciones usuarios
+    %% Sistema externo
+    his["HIS / BD Hospital<br/>Sistema externo"]
+
+    %% Infraestructura
+    aca["Azure Container Apps<br/>Despliegue y escalamiento"]
+
+    cicd["GitHub Actions<br/>CI/CD"]
+
+    %% Acceso de usuarios
     paciente --> frontend
     enfermero --> frontend
     medico --> frontend
     auditor --> frontend
     admin --> frontend
 
-    %% Frontend
     frontend --> backend
 
-    %% Monolito modular
+    %% Organización modular
+    backend --> identidad
     backend --> triaje
     backend --> clinico
-    backend --> auditoria
     backend --> administracion
+    backend --> auditoria
     backend --> notificaciones
 
     %% Persistencia
+    identidad --> postgres
     triaje --> postgres
     clinico --> postgres
     administracion --> postgres
     notificaciones --> postgres
 
+    %% Outbox
+    backend --> outbox
+    outbox --> relay
+    relay --> kafka
+
+    %% Eventos consumidos
+    kafka --> triaje
+    kafka --> clinico
+    kafka --> auditoria
+    kafka --> notificaciones
+
     %% Auditoría
     auditoria --> ledger
-    triaje --> auditoria
-    clinico --> auditoria
-    administracion --> auditoria
 
-    %% Inteligencia artificial
-    triaje --> aml
+    %% IA
+    triaje --> ia
 
-    %% Integración hospitalaria
+    %% Integración externa
     clinico --> his
 
     %% Despliegue
-    container --> backend
-
-    %% CI/CD
-    github --> container
+    aca -. "Ejecuta la aplicación" .-> backend
+    cicd --> aca
 ```
 
----
-
-## Elementos del diagrama
-
-### 1. Frontend Web / Móvil
-
-Es la interfaz mediante la cual los usuarios interactúan con MediTriage.
-
-Permite registrar información de los pacientes, consultar información clínica, visualizar prioridades y administrar las funcionalidades correspondientes según el rol del usuario.
-
-**Tecnologías:** HTML, CSS y JavaScript.
+**Nota arquitectónica:** los módulos del diagrama son divisiones lógicas de una misma aplicación; no representan microservicios desplegados de forma independiente. El proceso Relay representa la función encargada de publicar los eventos pendientes de la tabla Outbox. Su despliegue específico deberá definirse según la implementación.
 
 ---
 
-### 2. Backend / API — Monolito Modular
+## 3. Descripción de los elementos
+
+### 3.1. Frontend Web / Móvil
+
+Interfaz mediante la cual los usuarios interactúan con MediTriage.
+
+Permite registrar información del paciente, ingresar síntomas, visualizar prioridades, consultar información clínica y acceder a las funciones correspondientes a cada rol.
+
+Se comunica con el Backend/API para enviar solicitudes y recibir los resultados.
+
+### 3.2. Backend / API
 
 Es el contenedor principal de la lógica de negocio de MediTriage.
 
-La solución utiliza una arquitectura de **Monolito Modular**, por lo que los distintos módulos funcionales forman parte de una misma aplicación Backend/API.
+**Tecnologías:** Node.js y Express.
 
-**Tecnología:** Node.js + Express.
+Implementa el estilo arquitectónico de Monolito Modular. Los módulos de Identidad, Triaje, Clínico, Administración, Auditoría y Notificaciones pertenecen a la misma aplicación.
 
-Dentro de este contenedor se organizan los siguientes módulos:
+El Backend coordina las operaciones de negocio, la persistencia en PostgreSQL, la interacción con el motor de inteligencia artificial y la generación de eventos de dominio.
 
-* Módulo de Triaje.
-* Módulo Clínico.
-* Módulo de Auditoría.
-* Módulo de Administración.
-* Módulo de Notificaciones.
+### 3.3. Módulo de Identidad
 
-El backend se despliega en **Azure Container Apps**, permitiendo utilizar infraestructura gestionada y escalamiento horizontal.
+Gestiona la identificación de pacientes y usuarios.
 
----
+Responsabilidades principales:
 
-### 3. Módulo de Triaje
+* Registro de pacientes.
+* Gestión de datos personales.
+* Identificación de pacientes.
+* Gestión de usuarios y roles.
 
-Se encarga de gestionar el registro y procesamiento de los síntomas del paciente y de la clasificación asistida.
+**Entidades relacionadas:** `Paciente`, `Usuario` y `Rol`.
 
-Sus principales responsabilidades son:
+### 3.4. Módulo de Triaje
 
-* Registrar síntomas.
-* Procesar la información ingresada.
-* Solicitar la clasificación asistida mediante inteligencia artificial.
-* Entregar la prioridad resultante para su visualización por el personal de enfermería.
-* Registrar las acciones relevantes para auditoría.
+Gestiona la clasificación inicial de pacientes según su nivel de urgencia.
 
-**Servicio asociado:** Azure Machine Learning.
+Responsabilidades principales:
 
----
+* Recepción de síntomas.
+* Captura de signos vitales.
+* Solicitud de clasificación asistida.
+* Recepción de resultados de inteligencia artificial.
+* Confirmación o modificación de la clasificación por enfermería.
+* Priorización de pacientes.
 
-### 4. Módulo Clínico
+Se comunica con Azure Machine Learning y utiliza PostgreSQL para mantener los datos correspondientes al proceso.
 
-Gestiona la información clínica utilizada por los profesionales de salud.
+**Eventos relacionados:** `sintomas.reportados`, `vitals.captured`, `triage.requested`, `triage.completed`, `triage.confirmed` y `triage.modified`.
 
-Sus principales responsabilidades son:
+### 3.5. Módulo Clínico
 
-* Consultar historias clínicas.
-* Gestionar registros clínicos.
-* Acceder a información necesaria para la atención.
-* Mantener la persistencia de la información clínica.
+Gestiona la información clínica utilizada durante la atención.
 
-La información operativa y clínica se almacena en **Azure Database for PostgreSQL**.
+Responsabilidades principales:
 
-También contempla la integración con el **HIS / BD Hospital** como sistema externo.
+* Gestión de encuentros de atención.
+* Consulta de historias clínicas.
+* Registro de información clínica.
+* Seguimiento del estado de atención.
+* Consulta de síntomas y signos vitales.
 
----
+**Entidades relacionadas:** `Atencion`, `Sintomas` y `SignosVitales`.
 
-### 5. Módulo de Auditoría
+Utiliza PostgreSQL como base de datos principal y contempla la integración con el HIS / BD Hospital como sistema externo.
 
-Se encarga de registrar y mantener la trazabilidad de las acciones relevantes realizadas dentro del sistema.
+### 3.6. Módulo de Administración
 
-Permite:
+Gestiona usuarios, roles, permisos y funciones administrativas.
 
-* Registrar eventos importantes.
-* Mantener historial de acciones.
-* Facilitar la revisión de registros clínicos.
-* Mantener trazabilidad de las priorizaciones generadas.
+Su información se mantiene en PostgreSQL, de acuerdo con el modelo de persistencia definido para el proyecto.
 
-Para los registros que requieren inmutabilidad y verificabilidad se utiliza **Azure SQL Database Ledger**.
+### 3.7. Módulo de Auditoría
 
----
+Mantiene la trazabilidad de las acciones relevantes del sistema.
 
-### 6. Módulo de Administración
+Responsabilidades principales:
 
-Gestiona las funciones administrativas de MediTriage.
+* Registrar eventos de dominio relevantes para auditoría.
+* Registrar el seguimiento de las decisiones generadas por inteligencia artificial.
+* Facilitar la revisión de las actividades realizadas.
+* Mantener trazabilidad de las acciones clínicas.
 
-Entre ellas se encuentran:
+Para los registros que requieren verificabilidad e inmutabilidad se utiliza Azure SQL Database Ledger.
 
-* Gestión de usuarios.
-* Gestión de permisos.
-* Administración de accesos.
-* Configuración relacionada con los roles del sistema.
+### 3.8. Módulo de Notificaciones
 
-La información administrativa se almacena en **Azure Database for PostgreSQL**.
+Gestiona las comunicaciones relacionadas con el proceso de atención.
 
----
+Responsabilidades principales:
 
-### 7. Módulo de Notificaciones
+* Notificaciones sobre el estado de espera.
+* Alertas de reevaluación.
+* Mensajes informativos relacionados con la atención.
 
-Gestiona las notificaciones relacionadas con el estado de atención y los procesos de espera.
-
-Puede utilizarse para funcionalidades como:
-
-* Informar el estado de espera del paciente.
-* Notificar cambios relevantes.
-* Apoyar procesos de reevaluación cuando corresponda.
-
-La información necesaria para estas funcionalidades se mantiene en **Azure Database for PostgreSQL**.
+Puede consumir eventos del broker para reaccionar a cambios relevantes en el flujo de atención.
 
 ---
 
-## Servicios gestionados y tecnologías
+## 4. Estrategia de persistencia
 
-Como parte de la estrategia cloud definida para MediTriage, se seleccionaron los siguientes servicios gestionados:
+### 4.1. Azure Database for PostgreSQL
 
-| Servicio                          | Uso dentro de MediTriage                                              |
-| --------------------------------- | --------------------------------------------------------------------- |
-| **Azure Container Apps**          | Despliegue y escalamiento de la aplicación                            |
-| **Azure Database for PostgreSQL** | Persistencia de datos clínicos, síntomas, usuarios y datos operativos |
-| **Azure SQL Database Ledger**     | Registro de auditoría inmutable y verificable                         |
-| **Azure Machine Learning**        | Alojamiento y administración del motor de clasificación asistida      |
-| **GitHub Actions**                | Integración continua, pruebas y despliegue                            |
+Es el motor principal de persistencia de MediTriage.
 
----
+Se seleccionó porque los datos del sistema están relacionados entre sí y requieren integridad referencial y transacciones ACID.
 
-## Relaciones principales
+El modelo entidad-relación contempla las siguientes tablas principales:
 
-### Usuarios → Frontend
+| Tabla            | Propósito                                                                     |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `Paciente`       | Información personal, RUT, nombre, fecha de nacimiento y condiciones crónicas |
+| `Personal`       | Identificación del personal, RUT, nombre y rol                                |
+| `Atencion`       | Encuentros de atención, paciente, personal, estado y fecha                    |
+| `SignosVitales`  | Presión sanguínea, pulsaciones, temperatura, saturación de oxígeno y fecha    |
+| `Sintomas`       | Descripción de síntomas, atención asociada, severidad y fecha                 |
+| `DecisionTriage` | Nivel ESI, justificación de IA, responsable de confirmación y fecha           |
 
-Los distintos tipos de usuarios acceden a MediTriage mediante la interfaz:
+Las tablas `SignosVitales`, `Sintomas` y `DecisionTriage` se relacionan con `Atencion` mediante `atencion_id`. La tabla `Atencion` relaciona al paciente mediante `paciente_rut` y al personal mediante `personal_id`.
 
-* **Paciente:** registra síntomas y consulta información correspondiente a su atención.
-* **Enfermero/a:** visualiza la prioridad y gestiona procesos relacionados con el triaje.
-* **Médico/a:** consulta información e historia clínica.
-* **Auditor clínico:** revisa registros y trazabilidad.
-* **Administrador:** gestiona usuarios, permisos y configuraciones.
+PostgreSQL también almacenará los registros necesarios para implementar el patrón Outbox.
 
----
+### 4.2. Azure SQL Database Ledger
 
-### Frontend → Backend / API
+Se utiliza para mantener registros de auditoría verificables e inmutables.
 
-El Frontend se comunica con el Backend/API para solicitar y enviar información relacionada con las funcionalidades de MediTriage.
+Su función es complementar la persistencia principal con trazabilidad de las decisiones y acciones relevantes.
 
----
+**PostgreSQL mantiene el estado operativo actual; Azure SQL Database Ledger respalda las necesidades de auditoría inmutable.**
 
-### Backend / API → Módulos
+### 4.3. Redis
 
-El Backend organiza la lógica de negocio mediante módulos internos.
+Redis se considera una posibilidad futura para escenarios de caché y visualización en tiempo real.
 
-Estos módulos **no representan microservicios independientes**. Todos forman parte del mismo Monolito Modular.
-
-Los principales módulos son:
-
-* Triaje.
-* Clínico.
-* Auditoría.
-* Administración.
-* Notificaciones.
+No se representa como servicio implementado actualmente, porque el ADR-0004 establece que podrá incorporarse posteriormente.
 
 ---
 
-### Módulos → Azure Database for PostgreSQL
+## 5. Broker de eventos: Apache Kafka
 
-Los módulos que requieren persistencia utilizan **Azure Database for PostgreSQL** como base de datos relacional gestionada.
+Apache Kafka es el broker seleccionado para el intercambio de eventos de dominio entre los distintos contextos del sistema.
 
-Se utiliza para almacenar:
+Permite almacenar eventos de forma persistente, desacoplar productores y consumidores, y reproducir eventos cuando sea necesario para procesos de auditoría o recuperación.
 
-* Síntomas.
-* Formularios.
-* Historias clínicas.
-* Usuarios.
-* Permisos.
-* Información operativa.
+Entre los eventos principales definidos en el catálogo se encuentran:
 
----
+* `paciente.registrado`
+* `encounter.started`
+* `sintomas.reportados`
+* `vitals.captured`
+* `triage.requested`
+* `triage.completed`
+* `triage.confirmed`
+* `triage.modified`
+* `paciente.cola`
+* `paciente.llamado`
+* `historial.visto`
+* `paciente.atendido`
 
-### Auditoría → Azure SQL Database Ledger
+Los eventos son inmutables e incluyen un `trace_id` para facilitar la trazabilidad.
 
-El Módulo de Auditoría utiliza **Azure SQL Database Ledger** para mantener registros de auditoría verificables e inmutables.
+### Productores y consumidores
 
-Esto permite mantener la trazabilidad de acciones relevantes y de las priorizaciones generadas por el sistema.
+| Evento                | Productor                     | Consumidores principales           |
+| --------------------- | ----------------------------- | ---------------------------------- |
+| `paciente.registrado` | Identidad                     | Clínico y Auditoría                |
+| `encounter.started`   | Clínico                       | Persistencia de la atención        |
+| `sintomas.reportados` | Flujo de registro de síntomas | Motor IA y Auditoría               |
+| `vitals.captured`     | Clínico / Enfermería          | Motor IA                           |
+| `triage.requested`    | Clínico                       | Azure Machine Learning             |
+| `triage.completed`    | Motor IA                      | Clínico y Auditoría                |
+| `triage.confirmed`    | Clínico / Enfermería          | Tablero de espera y Auditoría      |
+| `triage.modified`     | Clínico / Enfermería          | Tablero de espera y Auditoría      |
+| `paciente.cola`       | Clínico                       | Visualización de la sala de espera |
+| `paciente.llamado`    | Clínico / Médico              | Pantallas de sala de espera        |
+| `historial.visto`     | Clínico / Médico              | Auditoría                          |
+| `paciente.atendido`   | Clínico / Médico              | Persistencia y tablero de espera   |
 
----
-
-### Triaje → Azure Machine Learning
-
-El Módulo de Triaje se comunica con **Azure Machine Learning** para utilizar el motor de clasificación asistida basado en inteligencia artificial.
-
-El resultado de esta clasificación sirve como apoyo para la priorización que posteriormente puede visualizar el personal de enfermería.
-
----
-
-### Módulo Clínico → HIS / BD Hospital
-
-El sistema contempla integración con el **HIS / BD Hospital** como sistema externo para acceder o intercambiar información clínica necesaria para el funcionamiento de MediTriage.
-
----
-
-### GitHub Actions → Azure Container Apps
-
-**GitHub Actions** automatiza los procesos de integración continua, pruebas y despliegue.
-
-Una vez que las modificaciones cumplen las condiciones definidas, el proceso de CI/CD permite desplegar la aplicación en **Azure Container Apps**.
-
----
-
-## Despliegue
-
-El Backend/API de MediTriage se ejecuta mediante **Azure Container Apps**.
-
-Este servicio permite desplegar la aplicación empaquetada en contenedores sin administrar directamente los servidores subyacentes.
-
-Además, permite configurar escalamiento horizontal para responder ante aumentos de demanda, por ejemplo, durante períodos de alta cantidad de pacientes.
+Los consumidores indicados reflejan las responsabilidades descritas en el catálogo de eventos. La implementación final deberá definir los topics y grupos de consumidores concretos de Kafka.
 
 ---
 
-## Trazabilidad con el Backlog
+## 6. Consistencia entre PostgreSQL y Kafka: patrón Outbox
 
-El C4 Nivel 2 permite relacionar las funcionalidades del backlog con los módulos correspondientes:
+La escritura de datos en PostgreSQL y la publicación de eventos en Kafka no constituye una única operación atómica. Por esta razón, MediTriage adopta el patrón **Outbox**.
 
-| User Story                                     | Módulo / Container relacionado    |
-| ---------------------------------------------- | --------------------------------- |
-| **US-01 — Registrar síntomas**                 | Módulo de Triaje                  |
-| **US-02 — Visualizar prioridad**               | Módulo de Triaje                  |
-| **US-03 — Consultar historia clínica**         | Módulo Clínico                    |
-| **US-04 — Auditar registros clínicos**         | Módulo de Auditoría               |
-| **US-05 — Panel de administración y permisos** | Módulo de Administración          |
-| **US-06 — Notificación de estado de espera**   | Módulo de Notificaciones          |
-| **US-07 — Reevaluación por tiempo de espera**  | Módulo de Triaje / Notificaciones |
-| **US-08 — Autenticación de dos factores**      | Módulo de Administración          |
-| **US-09 — Cancelaciones voluntarias**          | Fuera del alcance actual          |
-| **US-10 — Selección de idioma**                | Frontend Web / Móvil              |
+El funcionamiento definido es el siguiente:
 
----
+1. El Backend procesa una operación de negocio.
+2. Dentro de una misma transacción de PostgreSQL, guarda los cambios de negocio y el evento correspondiente en la tabla `outbox_events`.
+3. Cuando la transacción se confirma, los cambios y el evento pendiente quedan almacenados.
+4. Un proceso Relay consulta los eventos pendientes de la tabla Outbox.
+5. El Relay publica los eventos en Apache Kafka de forma asíncrona.
+6. Los consumidores procesan los eventos utilizando mecanismos de idempotencia para gestionar posibles entregas duplicadas.
 
-## Flujo principal del sistema
+Este mecanismo busca evitar la pérdida de eventos causada por fallos entre la escritura de datos y su publicación en el broker.
 
-El flujo general de MediTriage es:
-
-1. El paciente ingresa al sistema mediante el Frontend.
-2. Registra sus síntomas y la información solicitada.
-3. El Frontend envía la información al Backend/API.
-4. El Módulo de Triaje procesa los síntomas.
-5. El sistema utiliza Azure Machine Learning para apoyar la clasificación.
-6. La información y el resultado se almacenan en Azure Database for PostgreSQL.
-7. El resultado puede ser visualizado por el personal de enfermería.
-8. Las acciones relevantes son registradas mediante el Módulo de Auditoría.
-9. Los registros de auditoría se mantienen en Azure SQL Database Ledger.
-10. Los profesionales médicos pueden consultar la información clínica mediante el Módulo Clínico.
+La garantía prevista es **At-Least-Once**: los eventos pueden entregarse más de una vez, por lo que los consumidores deben evitar procesar duplicados como si fueran operaciones nuevas.
 
 ---
 
-## Alcance del Nivel 2
+## 7. Patrones arquitectónicos aplicados
+
+### 7.1. CQRS
+
+Se adopta CQRS para separar las operaciones de escritura de las operaciones de lectura.
+
+Esto permite diferenciar las transacciones clínicas de las consultas utilizadas por médicos y enfermería.
+
+El ADR-0004 no define una tecnología independiente para las vistas de lectura; por lo tanto, el diagrama no incorpora una base de datos adicional para CQRS.
+
+### 7.2. Outbox
+
+Se utiliza para mantener la consistencia entre las transacciones de PostgreSQL y la publicación de eventos en Kafka.
+
+La tabla `outbox_events` almacena los eventos pendientes dentro de la misma transacción que modifica los datos de negocio.
+
+### 7.3. Saga
+
+No se implementa en esta etapa, porque el MVP no requiere procesos distribuidos complejos.
+
+### 7.4. Event Sourcing
+
+No se implementa inicialmente. La auditoría requerida se aborda mediante Azure SQL Database Ledger y el registro de eventos de dominio.
+
+---
+
+## 8. Servicios gestionados e infraestructura
+
+| Servicio o tecnología         | Responsabilidad                                             |
+| ----------------------------- | ----------------------------------------------------------- |
+| Azure Container Apps          | Despliegue de la aplicación y configuración de escalamiento |
+| Azure Database for PostgreSQL | Persistencia relacional principal                           |
+| Azure SQL Database Ledger     | Auditoría verificable e inmutable                           |
+| Azure Machine Learning        | Motor de clasificación asistida por IA                      |
+| Apache Kafka                  | Broker de eventos de dominio                                |
+| GitHub Actions                | Automatización de integración, pruebas y despliegue         |
+
+GitHub Actions automatiza el flujo de CI/CD y permite desplegar la aplicación en Azure Container Apps una vez cumplidas las condiciones definidas para la integración y las pruebas.
+
+El ADR-0004 selecciona Apache Kafka como broker, pero no especifica un proveedor o servicio gestionado para alojarlo. Por eso se representa como tecnología de mensajería sin atribuirle un servicio de Azure no confirmado.
+
+---
+
+## 9. Flujo principal de datos y eventos
+
+El flujo general de una clasificación de paciente es el siguiente:
+
+1. El paciente ingresa sus datos y reporta sus síntomas desde el Frontend.
+2. El Backend recibe la información y la procesa mediante los módulos correspondientes.
+3. Los datos de negocio se guardan en PostgreSQL.
+4. En la misma transacción se registra el evento correspondiente en `outbox_events`.
+5. El proceso Relay publica el evento en Kafka.
+6. Los consumidores reciben los eventos que necesitan para ejecutar sus responsabilidades.
+7. El Módulo de Triaje utiliza Azure Machine Learning para obtener una clasificación asistida.
+8. El resultado se registra en el sistema y queda disponible para su revisión por enfermería.
+9. Las decisiones y acciones relevantes se registran para auditoría.
+10. Los eventos relacionados con la espera, el llamado y la finalización de la atención permiten actualizar los procesos de seguimiento correspondientes.
+
+---
+
+## 10. Trazabilidad con el backlog
+
+| User Story                                  | Módulo relacionado       |
+| ------------------------------------------- | ------------------------ |
+| US-01 — Registrar síntomas                  | Identidad / Triaje       |
+| US-02 — Visualizar prioridad                | Triaje                   |
+| US-03 — Consultar historia clínica          | Clínico                  |
+| US-04 — Auditar registros clínicos          | Auditoría                |
+| US-05 — Panel de administración y permisos  | Administración           |
+| US-06 — Notificaciones del estado de espera | Notificaciones           |
+| US-07 — Reevaluación por tiempo de espera   | Triaje / Notificaciones  |
+| US-08 — Autenticación de dos factores       | Administración           |
+| US-09 — Registrar cancelaciones voluntarias | Fuera del alcance actual |
+| US-10 — Selección de idioma                 | Frontend Web / Móvil     |
+
+---
+
+## 11. Consideraciones de despliegue
+
+El Backend/API se despliega mediante Azure Container Apps.
+
+La solución debe seguir las propuestas del checklist 12-Factor, incluyendo:
+
+* Configuración mediante variables de entorno y gestión segura de secretos.
+* Separación entre construcción, publicación y ejecución.
+* Procesos sin estado persistente en memoria.
+* Uso del puerto asignado mediante `process.env.PORT`.
+* Escalamiento horizontal según la demanda.
+* Cierre seguro de conexiones y procesos.
+* Registro de logs mediante stdout/stderr.
+* Consistencia entre entornos de desarrollo y producción.
+
+La ubicación concreta de Kafka y la forma de desplegar el proceso Relay deberán definirse en la implementación. El diagrama refleja las responsabilidades arquitectónicas acordadas, sin asumir decisiones de infraestructura que todavía no aparecen en los ADR proporcionados.
+
+---
+
+## 12. Alcance del Nivel 2
 
 Este diagrama representa:
 
 * La interfaz de usuario.
-* El Backend/API.
-* La organización modular del monolito.
-* Las bases de datos utilizadas.
+* El Backend/API y su organización modular.
+* La persistencia relacional principal.
+* El almacenamiento de auditoría inmutable.
 * El motor de clasificación asistida.
-* La integración con el sistema hospitalario.
-* La infraestructura gestionada de Azure.
-* El proceso de CI/CD.
+* El broker de eventos.
+* El patrón Outbox y el proceso Relay.
+* Las relaciones principales entre los módulos y los servicios externos.
+* La infraestructura de despliegue y el proceso de CI/CD.
 
-El Nivel 2 **no representa componentes internos detallados del código**, ya que ese nivel de detalle corresponde al C4 Nivel 3.
-
----
-
-## Decisiones arquitectónicas reflejadas
-
-El C4 Nivel 2 refleja las decisiones tomadas durante S04:
-
-* **Proveedor cloud:** Microsoft Azure.
-* **Estilo arquitectónico:** Monolito Modular.
-* **Despliegue:** Azure Container Apps.
-* **Persistencia:** Azure Database for PostgreSQL.
-* **Auditoría:** Azure SQL Database Ledger.
-* **Inteligencia artificial:** Azure Machine Learning.
-* **CI/CD:** GitHub Actions.
-
-La utilización de servicios gestionados busca reducir la carga operativa del equipo y facilitar el despliegue, escalabilidad, persistencia, auditoría e integración con inteligencia artificial.
+Los detalles internos del código, las clases y la estructura detallada de cada módulo corresponden al Nivel 3 de C4.
 
 ---
 
-## Consideraciones 12-Factor
+## 13. Decisiones arquitectónicas reflejadas
 
-El diseño del Nivel 2 considera las propuestas definidas en el checklist 12-Factor:
+El C4 Nivel 2 incorpora las decisiones de los ADR-0003 y ADR-0004:
 
-* Uso de servicios externos como recursos acoplables.
-* Configuración mediante variables de entorno y secretos.
-* Separación entre construcción y despliegue.
-* Procesos sin estado persistente en el Backend.
-* Uso de `process.env.PORT` para el puerto de ejecución.
-* Escalamiento horizontal mediante Azure Container Apps.
-* Graceful shutdown para cierre seguro de conexiones.
-* Uso de Docker para mantener paridad entre desarrollo y producción.
-* Registro de eventos mediante stdout/stderr.
-* Ejecución de procesos administrativos en el entorno de ejecución.
+* Microsoft Azure como proveedor cloud.
+* Monolito Modular como estilo arquitectónico.
+* PostgreSQL como base de datos principal.
+* Azure SQL Database Ledger para auditoría.
+* Apache Kafka como broker de eventos.
+* CQRS para separar lecturas y escrituras.
+* Outbox para mantener la consistencia entre PostgreSQL y Kafka.
+* Azure Machine Learning para clasificación asistida.
+* Azure Container Apps para el despliegue.
+* GitHub Actions para CI/CD.
 
-Estas medidas permiten que el Monolito Modular pueda ejecutarse de manera compatible con el enfoque cloud-native definido para el proyecto.
+Estas decisiones buscan equilibrar seguridad, disponibilidad, rendimiento, trazabilidad y capacidad de evolución, manteniendo una arquitectura adecuada para el MVP de MediTriage.
 
