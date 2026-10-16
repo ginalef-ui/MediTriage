@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: meditriage-config
+  labels:
+    app: meditriage-backend
+    iniciativa: meditriage
+data:
+  # Variables del Runtime Node.js (según tu Dockerfile y deployment.yaml)
+  NODE_ENV: "production"
+  PORT: "3000"
+  API_BASE_PATH: "/v1"
+
+  # Persistencia Principal: PostgreSQL (según docker-compose.yml y ADR-0004)
+  # Nota: POSTGRES_USER y POSTGRES_PASSWORD van en meditriage-secrets
+  POSTGRES_HOST: "meditriage-postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "meditriage_db"
+
+  # Broker de Eventos: Apache Kafka (según outbox_publisher.py y consumer.py)
+  KAFKA_BOOTSTRAP_SERVERS: "meditriage-kafka:9092"
+  KAFKA_TOPIC: "meditriage.events"
+  KAFKA_CONSUMER_GROUP: "clinica-group"
+
+  # Configuración Patrón Outbox (según outbox_publisher.py)
+  OUTBOX_POLL_INTERVAL_SECONDS: "1"
+  OUTBOX_RETRY_DELAY_SECONDS: "2"
+
+  # Servicios Gestionados en Azure (según openapi.yaml y ADR-0003 / ADR-0004)
+  AZURE_ML_ENDPOINT: "https://api.meditriage.cl/ml/v1/classify"
+  AZURE_SQL_LEDGER_ENABLED: "true"
