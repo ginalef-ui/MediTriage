@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/ginalef-ui/meditriage-backend:latest
+          image: ghcr.io/ginalef-ui/meditriage-backend@sha256:50e0fc6ea629379e39a11fdacbfcbd5cd29eade53b88973826c767c95d3dbae7
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
