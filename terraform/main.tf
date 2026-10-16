@@ -10,12 +10,7 @@ terraform {
   }
 
   # Backend remoto (Ejemplo con AWS S3 y DynamoDB)
-  backend "s3" {
-    bucket         = "nombre-de-tu-bucket-tfstate"
-    key            = "aula-viva/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "terraform-lock"
-  }
+
 }
 
 # 2. Provider
