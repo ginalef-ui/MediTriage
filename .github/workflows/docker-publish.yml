@@ -26,4 +26,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/ginalef-ui/meditriage-backend:latest
+          tags: ghcr.io/ginalef-ui/meditriage-backend:${{ github.sha }}
