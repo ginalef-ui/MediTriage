@@ -1,0 +1,18 @@
+
+rules:
+  - id: meditriage-jwt-hardcoded-secret
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "MediTriage: clave JWT fija detectada."
+    patterns:
+      - pattern-either:
+          - pattern: jwt.sign($PAYLOAD, "...", ...)
+          - pattern: jwt.verify($TOKEN, "...", ...)
+
+  - id: meditriage-sql-inseguro
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "MediTriage: posible consulta SQL insegura."
+    pattern-either:
+      - pattern: $DB.query(`...${$VALUE}...`, ...)
+      - pattern: $DB.query($SQL + $VALUE, ...)
