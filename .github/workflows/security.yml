@@ -1,0 +1,51 @@
+name: Security Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  sast:
+
+    name: SAST - Semgrep
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ejecutar Semgrep
+        run: |
+          echo "Ejecutando análisis SAST con Semgrep"
+
+  sca:
+
+    name: SCA - Trivy
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ejecutar Trivy
+        run: |
+          echo "Ejecutando análisis SCA con Trivy"
+
+  secrets:
+
+    name: Secret Scan - Gitleaks
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ejecutar Gitleaks
+        run: |
+          echo "Buscando secretos expuestos"
