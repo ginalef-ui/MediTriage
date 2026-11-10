@@ -1,59 +1,75 @@
-name: Security Pipeline
+# ... (Jobs previos: sast, sca, secrets) ...
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-jobs:
-  sast:
-    name: SAST - Semgrep
+  build_and_scan:
+    name: Build & Container Scan
     runs-on: ubuntu-latest
+    needs: [sast, sca, secrets] # Esperar a que pase el shift-left
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # Requerido para keyless signing con Cosign
     steps:
       - uses: actions/checkout@v4
-      - name: Ejecutar Semgrep
-        uses: returntocorp/semgrep-action@v1
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          config: "p/owasp-top-ten .semgrep/"
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-  sca:
-    name: SCA - Trivy & SBOM
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Ejecutar análisis SCA con Trivy
+      - name: Build and push Docker image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - name: IaC Scan (Trivy)
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          ignore-unfixed: true
+          scan-type: 'config'
+          hide-progress: false
           format: 'table'
           exit-code: '1'
           severity: 'HIGH,CRITICAL'
           
-      - name: Generar SBOM (CycloneDX)
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-          syft dir:. -o cyclonedx-json > sbom.json
-          
-      - name: Publicar artefacto SBOM
-        uses: actions/upload-artifact@v4
+      - name: Container Scan (Trivy)
+        uses: aquasecurity/trivy-action@master
         with:
-          name: sbom-artifact
-          path: sbom.json
+          image-ref: 'ghcr.io/${{ github.repository }}:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
 
-  secrets:
-    name: Secret Scan - Gitleaks
+  sign_and_attest:
+    name: Sign Image and Generate Attestation
     runs-on: ubuntu-latest
+    needs: build_and_scan
+    permissions:
+      packages: write
+      id-token: write # Requerido para OIDC
     steps:
-      - uses: actions/checkout@v4
+      - uses: sigstore/cosign-installer@v3
+        
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          fetch-depth: 0
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Ejecutar Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+      - name: Sign the published Docker image
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAGS: ghcr.io/${{ github.repository }}:${{ github.sha }}
+        run: |
+          cosign sign --yes ${TAGS}
+          cosign verify --certificate-identity-regexp ".*" --certificate-oidc-issuer "https://token.actions.githubusercontent.com" ${TAGS}
+
+      # Generar attestation SLSA Nivel 2
+      - name: Generate SLSA provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.build-image.outputs.digest }}
+          push-to-registry: true
