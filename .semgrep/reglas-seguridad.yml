@@ -1,0 +1,21 @@
+rules:
+  - id: hardcoded-jwt-secret
+    message: "Se detectó un secreto JWT escrito directamente en el código. Esto es un riesgo de seguridad. Utiliza variables de entorno."
+    languages:
+      - javascript
+      - typescript
+      - python
+    severity: ERROR
+    patterns:
+      - pattern-either:
+        - pattern: jwt.sign(..., "...", ...)
+        - pattern: jwt.encode(..., "...", ...)
+
+  - id: uso-de-eval-peligroso
+    message: "Evita usar eval(). Permite la ejecución de código arbitrario y genera vulnerabilidades críticas (RCE)."
+    languages:
+      - javascript
+      - typescript
+      - python
+    severity: WARNING
+    pattern: eval(...)
