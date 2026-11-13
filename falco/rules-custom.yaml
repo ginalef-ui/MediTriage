@@ -1,0 +1,50 @@
+
+list: meditriage_shells
+  items: [sh, bash, dash, ash, zsh, ksh]
+
+list: meditriage_allowed_ports
+  items: [53, 443, 5432, 9092]
+
+macro: meditriage_container
+  condition: container.id != host and k8s.ns.name in (meditriage-dev, meditriage-prod)
+
+rule: MediTriage - Shell interactiva en contenedor
+  desc: Se abrió una shell con terminal en un contenedor de MediTriage. El backend nunca la necesita; puede indicar acceso a datos clínicos.
+  condition: >
+    evt.type in (execve, execveat) and evt.dir = <
+    and meditriage_container
+    and proc.name in (meditriage_shells)
+    and proc.tty != 0
+  output: >
+    Shell interactiva en MediTriage (ns=%k8s.ns.name pod=%k8s.pod.name
+    container=%container.name user=%user.name cmd=%proc.cmdline)
+  priority: CRITICAL
+  tags: [meditriage, container, shell, mitre_execution, incident]
+
+rule: MediTriage - Escritura bajo /etc
+  desc: Un proceso escribió un archivo bajo /etc en un contenedor de MediTriage. Los contenedores deben ser inmutables.
+  condition: >
+    evt.type in (open, openat, openat2) and evt.dir = <
+    and evt.is_open_write = true and fd.typechar = 'f' and fd.num >= 0
+    and meditriage_container
+    and fd.name startswith /etc/
+  output: >
+    Escritura bajo /etc en MediTriage (file=%fd.name ns=%k8s.ns.name
+    pod=%k8s.pod.name container=%container.name proc=%proc.name cmd=%proc.cmdline)
+  priority: ERROR
+  tags: [meditriage, container, filesystem, mitre_persistence, incident]
+
+rule: MediTriage - Conexion saliente inesperada
+  desc: Un contenedor de MediTriage abrió una conexión a un puerto distinto de DNS, HTTPS, PostgreSQL o Kafka. Posible fuga de datos de pacientes.
+  condition: >
+    evt.type = connect and evt.dir = <
+    and (fd.typechar = 4 or fd.typechar = 6)
+    and fd.ip != "0.0.0.0" and fd.net != "127.0.0.0/8"
+    and (evt.rawres >= 0 or evt.res = EINPROGRESS)
+    and meditriage_container
+    and not fd.sport in (meditriage_allowed_ports)
+  output: >
+    Conexion saliente inesperada en MediTriage (dest=%fd.name ns=%k8s.ns.name
+    pod=%k8s.pod.name container=%container.name proc=%proc.name)
+  priority: ERROR
+  tags: [meditriage, container, network, mitre_exfiltration, incident]
