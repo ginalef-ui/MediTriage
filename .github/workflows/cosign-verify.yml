@@ -1,0 +1,46 @@
+
+name: S10 - Cosign Verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_digest:
+        description: "Digest SHA256 de la imagen firmada"
+        required: true
+        type: string
+      signer_workflow:
+        description: "Ruta del workflow que firmo la imagen"
+        required: true
+        default: "docker-publish.yml"
+        type: string
+
+jobs:
+  verify-signature:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - name: Instalar Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Verificar firma de MediTriage
+        env:
+          IMAGE_DIGEST: ${{ inputs.image_digest }}
+          SIGNER_WORKFLOW: ${{ inputs.signer_workflow }}
+        run: |
+          if [[ ! "$IMAGE_DIGEST" =~ ^sha256:[a-fA-F0-9]{64}$ ]]; then
+            echo "Error: digest SHA256 invalido"
+            exit 1
+          fi
+
+          IMAGE="ghcr.io/ginalef-ui/meditriage-backend@$IMAGE_DIGEST"
+
+          cosign verify \
+            --certificate-identity \
+            "https://github.com/ginalef-ui/MediTriage/.github/workflows/${SIGNER_WORKFLOW}@refs/heads/main" \
+            --certificate-oidc-issuer \
+            "https://token.actions.githubusercontent.com" \
+            "$IMAGE"
