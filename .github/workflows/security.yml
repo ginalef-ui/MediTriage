@@ -91,3 +91,19 @@ jobs:
       - name: DAST - OWASP ZAP
         run: |
           echo "Ejecutando análisis dinámico"
+
+  sbom:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+  
+        - name: Generar SBOM (CycloneDX)
+          run: |
+            npm install -g @cyclonedx/cyclonedx-npm
+            cyclonedx-npm --output-format JSON --output-file sbom.json
+  
+        - name: Subir artefacto SBOM
+          uses: actions/upload-artifact@v4
+          with:
+            name: sbom-cyclonedx
+            path: sbom.json
