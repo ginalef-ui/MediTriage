@@ -7,7 +7,60 @@
 <section id="ingreso" class="card login"><h2>Iniciar sesión</h2><p class="muted">Ingresa con una de las cuentas de prueba configuradas.</p><form id="login" class="grid"><label>Usuario<input name="usuario" required autocomplete="username" placeholder="Ej. admin"></label><label>Contraseña<input name="clave" type="password" required autocomplete="current-password"></label><button>Entrar al panel</button></form><p class="hint">Cuentas de prueba: admision, triaje, medico o admin.</p></section>
 <section id="panel" hidden><div class="top"><div><h1>Panel de atención</h1><span id="identidad" class="muted"></span></div><div><button id="actualizar" class="secondary">Actualizar</button> <button id="salir" class="secondary">Salir del panel</button></div></div>
 <div class="row"><section id="registroPaciente" class="card" hidden><h2>Registrar paciente ficticio</h2><p class="muted">Utiliza un identificador inventado, por ejemplo PAC-002.</p><form id="pacienteForm" class="grid"><label>Identificador<input name="identificador" minlength="3" maxlength="40" required placeholder="PAC-002"></label><label>Nombre ficticio<input name="nombre" minlength="2" maxlength="100" required placeholder="Paciente Demo"></label><button>Guardar paciente</button></form></section>
-<section id="registroAtencion" class="card" hidden><h2>Registrar atención</h2><p class="muted">Selecciona un paciente ficticio existente.</p><form id="atencionForm" class="grid"><label>Paciente<select name="paciente_id" class="pacientes" required></select></label><label>Síntomas ficticios<textarea name="sintomas" minlength="2" maxlength="1000" required></textarea></label><label>Pulsaciones<input name="pulsaciones" type="number" min="1" max="250" required></label><label>Presión arterial<input name="presion_arterial" pattern="[0-9]{2,3}/[0-9]{2,3}" placeholder="120/80" required></label><button>Guardar atención</button></form></section></div>
+<section id="registroAtencion" class="card" hidden><h2>Registrar atención</h2><p class="muted">Selecciona un paciente ficticio existente.</p><form id="atencionForm" class="grid"><label>Paciente<select name="paciente_id" class="pacientes" required></select></label><label>Síntomas ficticios<textarea name="sintomas" minlength="2" maxlength="1000" required></textarea></label><label>Pulsaciones<input name="pulsaciones" type="number" min="1" max="250" required></label><label>Presión arterial<input name="presion_arterial" pattern="[0-9]{2,3}/[0-9]{2,3}" placeholder="120/80" required></label><label>Edad en años<input name="edad_anos" type="number" min="18" max="120" placeholder="Ej. 35"></label>
+<label>Frecuencia respiratoria por minuto<input name="frecuencia_respiratoria" type="number" min="1" max="100" placeholder="Ej. 18"></label>
+<label>Saturación de oxígeno (%)<input name="saturacion_oxigeno" type="number" min="1" max="100" placeholder="Ej. 98"></label>
+<label>Temperatura (°C)<input name="temperatura" type="number" min="25" max="45" step="0.1" placeholder="Ej. 36.5"></label>
+<h3>Evaluación profesional para el caso ficticio</h3>
+<p class="muted">Selecciona una respuesta solo cuando esté evaluada. Estos campos todavía no realizan la clasificación.</p>
+
+<label>
+¿Requiere una intervención inmediata para salvar la vida?
+<select name="intervencion_inmediata">
+    <option value="">No evaluado</option>
+    <option value="true">Sí</option>
+    <option value="false">No</option>
+</select>
+</label>
+
+<label>
+¿Se identificó una situación de alto riesgo?
+<select name="situacion_alto_riesgo">
+    <option value="">No evaluado</option>
+    <option value="true">Sí</option>
+    <option value="false">No</option>
+</select>
+</label>
+
+<label>
+¿Presenta una alteración nueva de conciencia?
+<select name="alteracion_conciencia_nueva">
+    <option value="">No evaluado</option>
+    <option value="true">Sí</option>
+    <option value="false">No</option>
+</select>
+</label>
+
+<label>
+¿Presenta dolor o malestar intenso?
+<select name="dolor_o_malestar_intenso">
+    <option value="">No evaluado</option>
+    <option value="true">Sí</option>
+    <option value="false">No</option>
+</select>
+</label>
+
+<label>
+Recursos previstos por el profesional
+<select name="recursos_previstos">
+    <option value="">No evaluado</option>
+    <option value="0">Ninguno</option>
+    <option value="1">Uno</option>
+    <option value="2">Dos o más</option>
+</select>
+</label>
+
+<button>Guardar atención</button></form></section></div>
 <section id="pendientesCard" class="card" hidden><div class="line"><div><h2>Atenciones pendientes</h2><p class="muted">La prioridad se elige manualmente para la demo.</p></div></div><div id="pendientes"></div></section>
 <section id="colaCard" class="card" hidden><h2>Cola de espera</h2><p class="muted">Atenciones con prioridad confirmada, ordenadas para la demostración.</p><div id="cola"></div></section>
 <section id="historialCard" class="card" hidden><h2>Historial del paciente</h2><p class="muted">Muestra las atenciones registradas para el paciente ficticio.</p><form id="historialForm" class="actions"><label>Paciente<select name="paciente_id" class="pacientes" required></select></label><button>Consultar historial</button></form><div id="historial"></div></section></section></main>
@@ -18,13 +71,300 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function aviso(t,error=false){const el=$('#mensaje');el.textContent=t;el.classList.toggle('error',error);el.hidden=false;}
 async function api(ruta,opts={}){const headers={...(opts.headers||{})};if(sesion)headers.Authorization='Bearer '+sesion.token;if(opts.body)headers['Content-Type']='application/json';const r=await fetch(ruta,{...opts,headers});let d;try{d=await r.json()}catch{throw Error('Respuesta inesperada del servidor.')}if(!r.ok){if(r.status===401&&sesion){sesion=null;mostrarSesion()}throw Error(typeof d.detail==='string'?d.detail:'Revisa los datos ingresados.')}return d}
 function mostrarSesion(){$('#ingreso').hidden=!!sesion;$('#panel').hidden=!sesion;if(!sesion){$('#login').reset();return}const role=sesion.rol;$('#identidad').textContent=sesion.nombre+' · Rol: '+role;$('#registroPaciente').hidden=!['admision','admin'].includes(role);$('#registroAtencion').hidden=!['admision','triaje','admin'].includes(role);$('#pendientesCard').hidden=!['triaje','admin'].includes(role);$('#colaCard').hidden=!['triaje','medico','admin'].includes(role);$('#historialCard').hidden=!['triaje','medico','admin'].includes(role);$('#historial').replaceChildren();}
-async function cargar(){let patients=await api('/pacientes');document.querySelectorAll('.pacientes').forEach(s=>{const previous=s.value;s.innerHTML='<option value="">Selecciona un paciente</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.nombre)} · ${esc(p.identificador)}</option>`).join('');if(patients.some(p=>String(p.id)===previous))s.value=previous});if(['triaje','admin'].includes(sesion.rol)){let cases=await api('/atenciones');const pending=cases.filter(c=>c.estado==='pendiente');$('#pendientes').innerHTML=pending.length?pending.map(c=>`<article class="entry"><div class="line"><h3>${esc(c.nombre)} <span class="muted">· ${esc(c.identificador)}</span></h3><span class="pill">Pendiente</span></div><p><strong>Síntomas:</strong> ${esc(c.sintomas)}</p><p><strong>Pulso:</strong> ${esc(c.pulsaciones)} · <strong>Presión:</strong> ${esc(c.presion_arterial)}</p><form class="actions confirmar" data-id="${c.id}"><label>Prioridad de prueba<select name="prioridad" required><option value="">Seleccionar</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Nota para la demo<input name="motivo" maxlength="500" placeholder="Opcional"></label><button>Confirmar prioridad</button></form></article>`).join(''):'<p class="empty">No hay atenciones pendientes.</p>'}if(['triaje','medico','admin'].includes(sesion.rol)){let queue=await api('/cola');$('#cola').innerHTML=queue.length?queue.map(c=>`<article class="entry"><div class="line"><h3>${esc(c.nombre)} <span class="muted">· ${esc(c.identificador)}</span></h3><span class="pill">Prioridad ${esc(c.prioridad_confirmada)}</span></div><p><strong>Síntomas:</strong> ${esc(c.sintomas)}</p><button class="secondary atender" data-id="${c.atencion_id}">Marcar atendido</button></article>`).join(''):'<p class="empty">No hay pacientes en espera.</p>'}}
+function resumenEvaluacionProfesional(d) {
+    const respuesta = valor =>
+        valor === true ? 'Sí' : valor === false ? 'No' : 'No evaluado';
+
+    const recursos = d.recursos_previstos === 0 ? 'Ninguno' :
+        d.recursos_previstos === 1 ? 'Uno' :
+        d.recursos_previstos === 2 ? 'Dos o más' : 'No evaluado';
+
+    return `<p><strong>Evaluación registrada:</strong>
+        Intervención inmediata: ${esc(respuesta(d.intervencion_inmediata))} ·
+        Alto riesgo: ${esc(respuesta(d.situacion_alto_riesgo))} ·
+        Alteración nueva de conciencia: ${esc(respuesta(d.alteracion_conciencia_nueva))} ·
+        Dolor o malestar intenso: ${esc(respuesta(d.dolor_o_malestar_intenso))} ·
+        Recursos previstos: ${esc(recursos)}</p>`;
+}
+
+async function cargar(){let patients=await api('/pacientes');document.querySelectorAll('.pacientes').forEach(s=>{const previous=s.value;s.innerHTML='<option value="">Selecciona un paciente</option>'+patients.map(p=>`<option value="${p.id}">${esc(p.nombre)} · ${esc(p.identificador)}</option>`).join('');if(patients.some(p=>String(p.id)===previous))s.value=previous});if(['triaje','admin'].includes(sesion.rol)){let cases=await api('/atenciones');const pending=cases.filter(c=>c.estado==='pendiente');$('#pendientes').innerHTML=pending.length?pending.map(c=>`<article class="entry"><div class="line"><h3>${esc(c.nombre)} <span class="muted">· ${esc(c.identificador)}</span></h3><span class="pill">Pendiente</span></div><p><strong>Síntomas:</strong> ${esc(c.sintomas)}</p><p><strong>Pulso:</strong> ${esc(c.pulsaciones)} · <strong>Presión:</strong> ${esc(c.presion_arterial)}</p><p class="meditriage-datos-triaje-pendiente"><strong>Edad:</strong> ${esc(c.edad_anos ?? 'No registrada')} · <strong>Frecuencia respiratoria:</strong> ${esc(c.frecuencia_respiratoria ?? 'No registrada')} · <strong>Saturación:</strong> ${esc(c.saturacion_oxigeno ?? 'No registrada')} · <strong>Temperatura:</strong> ${esc(c.temperatura ?? 'No registrada')}</p>${resumenEvaluacionProfesional(c)}<form class="actions confirmar" data-id="${c.id}"><label>Prioridad de prueba<select name="prioridad" required><option value="">Seleccionar</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label><label>Nota para la demo<input name="motivo" maxlength="500" placeholder="Opcional"></label><button>Confirmar prioridad</button></form></article>`).join(''):'<p class="empty">No hay atenciones pendientes.</p>'}if(['triaje','medico','admin'].includes(sesion.rol)){let queue=await api('/cola');$('#cola').innerHTML=queue.length?queue.map(c=>`<article class="entry"><div class="line"><h3>${esc(c.nombre)} <span class="muted">· ${esc(c.identificador)}</span></h3><span class="pill">Prioridad ${esc(c.prioridad_confirmada)}</span></div><p><strong>Síntomas:</strong> ${esc(c.sintomas)}</p><button class="secondary atender" data-id="${c.atencion_id}">Marcar atendido</button></article>`).join(''):'<p class="empty">No hay pacientes en espera.</p>'}}
 $('#login').addEventListener('submit',async e=>{e.preventDefault();let data=Object.fromEntries(new FormData(e.target));try{sesion=await api('/login',{method:'POST',body:JSON.stringify(data)});mostrarSesion();await cargar();aviso('Sesión iniciada. Usa únicamente datos ficticios.')}catch(err){aviso(err.message,true)}});
 $('#salir').addEventListener('click',()=>{sesion=null;mostrarSesion();aviso('Saliste del panel.');});
 $('#actualizar').addEventListener('click',async()=>{try{await cargar();aviso('Información actualizada.')}catch(err){aviso(err.message,true)}});
 $('#pacienteForm').addEventListener('submit',async e=>{e.preventDefault();let data=Object.fromEntries(new FormData(e.target));try{await api('/pacientes',{method:'POST',body:JSON.stringify(data)});e.target.reset();await cargar();aviso('Paciente ficticio registrado.')}catch(err){aviso(err.message,true)}});
-$('#atencionForm').addEventListener('submit',async e=>{e.preventDefault();let data=Object.fromEntries(new FormData(e.target));data.paciente_id=Number(data.paciente_id);data.pulsaciones=Number(data.pulsaciones);try{await api('/atenciones',{method:'POST',body:JSON.stringify(data)});e.target.reset();await cargar();aviso('Atención registrada como pendiente.')}catch(err){aviso(err.message,true)}});
+$('#atencionForm').addEventListener('submit',async e=>{e.preventDefault();let data=Object.fromEntries(new FormData(e.target));data.paciente_id=Number(data.paciente_id);data.pulsaciones=Number(data.pulsaciones);for(const campo of ['intervencion_inmediata','situacion_alto_riesgo','alteracion_conciencia_nueva','dolor_o_malestar_intenso']){data[campo]=data[campo]===''?null:data[campo]==='true';}data.recursos_previstos=data.recursos_previstos===''?null:Number(data.recursos_previstos);for(const campo of ['edad_anos','frecuencia_respiratoria','saturacion_oxigeno','temperatura']){data[campo]=data[campo]===''?null:Number(data[campo]);}try{await api('/atenciones',{method:'POST',body:JSON.stringify(data)});e.target.reset();await cargar();aviso('Atención registrada como pendiente.')}catch(err){aviso(err.message,true)}});
 $('#pendientes').addEventListener('submit',async e=>{if(!e.target.matches('.confirmar'))return;e.preventDefault();let data=Object.fromEntries(new FormData(e.target));data.prioridad=Number(data.prioridad);try{await api('/atenciones/'+e.target.dataset.id+'/confirmar',{method:'POST',body:JSON.stringify(data)});await cargar();aviso('Prioridad confirmada. La atención pasó a la cola.')}catch(err){aviso(err.message,true)}});
 $('#cola').addEventListener('click',async e=>{let b=e.target.closest('.atender');if(!b)return;b.disabled=true;try{await api('/atenciones/'+b.dataset.id+'/atender',{method:'POST'});await cargar();aviso('Atención marcada como atendida.')}catch(err){b.disabled=false;aviso(err.message,true)}});
-$('#historialForm').addEventListener('submit',async e=>{e.preventDefault();let id=new FormData(e.target).get('paciente_id');try{let h=await api('/pacientes/'+encodeURIComponent(id)+'/historial');$('#historial').innerHTML=`<h3>${esc(h.paciente.nombre)} · ${esc(h.paciente.identificador)}</h3>`+(h.atenciones.length?h.atenciones.map(a=>`<article class="entry"><div class="line"><strong>Atención ${esc(a.id)}</strong><span class="pill">${esc(a.estado)}</span></div><p><strong>Síntomas:</strong> ${esc(a.sintomas)}</p><p><strong>Pulso:</strong> ${esc(a.pulsaciones)} · <strong>Presión:</strong> ${esc(a.presion_arterial)}</p><p><strong>Prioridad confirmada:</strong> ${a.prioridad_confirmada===null?'Pendiente':esc(a.prioridad_confirmada)}</p><p><strong>Nota:</strong> ${esc(a.motivo_cambio||'Sin nota')}</p><p class="muted">Registro: ${esc(a.fecha_registro)}</p></article>`).join(''):'<p class="empty">Este paciente no tiene atenciones registradas.</p>');}catch(err){aviso(err.message,true)}});
-</script></body></html>
+$('#historialForm').addEventListener('submit',async e=>{e.preventDefault();let id=new FormData(e.target).get('paciente_id');try{let h=await api('/pacientes/'+encodeURIComponent(id)+'/historial');$('#historial').innerHTML=`<h3>${esc(h.paciente.nombre)} · ${esc(h.paciente.identificador)}</h3>`+(h.atenciones.length?h.atenciones.map(a=>`<article class="entry"><div class="line"><strong>Atención ${esc(a.id)}</strong><span class="pill">${esc(a.estado)}</span></div><p><strong>Síntomas:</strong> ${esc(a.sintomas)}</p><p><strong>Pulso:</strong> ${esc(a.pulsaciones)} · <strong>Presión:</strong> ${esc(a.presion_arterial)}</p><p><strong>Edad:</strong> ${esc(a.edad_anos ?? 'No registrada')} · <strong>Frecuencia respiratoria:</strong> ${esc(a.frecuencia_respiratoria ?? 'No registrada')} · <strong>Saturación:</strong> ${esc(a.saturacion_oxigeno ?? 'No registrada')} · <strong>Temperatura:</strong> ${esc(a.temperatura ?? 'No registrada')}</p>${resumenEvaluacionProfesional(a)}<p><strong>Prioridad confirmada:</strong> ${a.prioridad_confirmada===null?'Pendiente':esc(a.prioridad_confirmada)}</p><p><strong>Nota:</strong> ${esc(a.motivo_cambio||'Sin nota')}</p><p class="muted">Registro: ${esc(a.fecha_registro)}</p></article>`).join(''):'<p class="empty">Este paciente no tiene atenciones registradas.</p>');}catch(err){aviso(err.message,true)}});
+</script>
+<script>
+// Boton de prueba de IA para atenciones pendientes.
+
+function instalarBotonesIA() {
+    document.querySelectorAll("#pendientes form.confirmar").forEach(form => {
+        if (form.dataset.iaInstalada === "si") return;
+
+        form.dataset.iaInstalada = "si";
+
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "secondary meditriage-boton-ia";
+        boton.textContent = "Consultar IA";
+
+        const resultado = document.createElement("p");
+        resultado.className = "muted";
+        resultado.setAttribute("role", "status");
+
+        boton.addEventListener("click", async () => {
+            boton.disabled = true;
+
+            const seleccionAnterior = form.querySelector(".vincular-sugerencia-ia");
+            if (seleccionAnterior) {
+                seleccionAnterior.remove();
+            }
+
+            resultado.textContent = "Consultando el modelo local. Puede tardar unos segundos...";
+
+            try {
+                const respuesta = await api(
+                    "/atenciones/" + form.dataset.id + "/sugerencia-ia",
+                    { method: "POST" }
+                );
+
+                resultado.textContent =
+                    "Sugerencia experimental: nivel " +
+                    respuesta.prioridad_sugerida +
+                    ". " +
+                    respuesta.explicacion +
+                    " La prioridad debe confirmarse manualmente.";
+
+                const etiqueta = document.createElement("label");
+                etiqueta.className = "vincular-sugerencia-ia";
+                etiqueta.style.display = "flex";
+                etiqueta.style.alignItems = "center";
+                etiqueta.style.gap = "8px";
+                etiqueta.style.flexBasis = "100%";
+
+                const casilla = document.createElement("input");
+                casilla.type = "checkbox";
+                casilla.name = "sugerencia_id";
+                casilla.required = true;
+                casilla.title = "Marca la casilla para vincular la sugerencia revisada.";
+                casilla.value = respuesta.sugerencia_id;
+                casilla.style.width = "auto";
+
+                etiqueta.appendChild(casilla);
+                etiqueta.appendChild(
+                    document.createTextNode(
+                        "Revisé esta sugerencia de IA para la decisión."
+                    )
+                );
+
+                form.appendChild(etiqueta);
+
+            } catch (error) {
+                resultado.textContent =
+                    "No se pudo obtener la sugerencia: " + error.message;
+            } finally {
+                boton.disabled = false;
+            }
+        });
+
+        form.appendChild(boton);
+        form.parentElement.appendChild(resultado);
+    });
+}
+
+const observadorIA = new MutationObserver(instalarBotonesIA);
+
+observadorIA.observe(
+    document.getElementById("pendientes"),
+    { childList: true, subtree: true }
+);
+
+instalarBotonesIA();
+</script>
+
+
+<script>
+// Mostrar sugerencias guardadas en el historial del paciente.
+
+const cajaHistorialIA = document.createElement("div");
+cajaHistorialIA.id = "meditriage-historial-sugerencias-ia";
+
+document.getElementById("historial").insertAdjacentElement(
+    "afterend",
+    cajaHistorialIA
+);
+
+let consultaHistorialIA = 0;
+
+function agregarTextoHistorialIA(contenedor, texto) {
+    const parrafo = document.createElement("p");
+    parrafo.textContent = texto;
+    contenedor.appendChild(parrafo);
+}
+
+document.getElementById("historialForm").addEventListener(
+    "submit",
+    async function(evento) {
+        evento.preventDefault();
+
+        const numeroConsulta = ++consultaHistorialIA;
+        const datosFormulario = new FormData(evento.currentTarget);
+        const pacienteId = datosFormulario.get("paciente_id");
+
+        cajaHistorialIA.replaceChildren();
+        agregarTextoHistorialIA(
+            cajaHistorialIA,
+            "Consultando sugerencias de IA..."
+        );
+
+        try {
+            const historial = await api(
+                "/pacientes/" +
+                encodeURIComponent(pacienteId) +
+                "/historial"
+            );
+
+            // Evita mostrar una respuesta antigua si se cambia de paciente.
+            if (numeroConsulta !== consultaHistorialIA) return;
+
+            cajaHistorialIA.replaceChildren();
+
+            // meditriage-detalle-decisiones
+            const decisiones = historial.atenciones.filter(
+                atencion => atencion.prioridad_confirmada !== null
+            );
+
+            if (decisiones.length > 0) {
+                const tituloDecisiones = document.createElement("h3");
+                tituloDecisiones.textContent = "Decisiones confirmadas";
+                cajaHistorialIA.appendChild(tituloDecisiones);
+
+                decisiones.forEach(atencion => {
+                    const tarjeta = document.createElement("article");
+                    tarjeta.className = "entry";
+
+                    agregarTextoHistorialIA(
+                        tarjeta,
+                        "Atención: " + atencion.id
+                    );
+
+                    agregarTextoHistorialIA(
+                        tarjeta,
+                        "Prioridad confirmada: " +
+                        atencion.prioridad_confirmada
+                    );
+
+                    agregarTextoHistorialIA(
+                        tarjeta,
+                        "Confirmada por: " +
+                        (atencion.confirmado_por_nombre || "No registrado")
+                    );
+
+                    if (atencion.sugerencia_utilizada_id !== null) {
+                        const sugerencia = (historial.sugerencias_ia || []).find(
+                            item => item.id === atencion.sugerencia_utilizada_id
+                        );
+
+                        agregarTextoHistorialIA(
+                            tarjeta,
+                            "Sugerencia de IA revisada: ID " +
+                            atencion.sugerencia_utilizada_id +
+                            (
+                                sugerencia
+                                ? " · Prioridad sugerida: " +
+                                  sugerencia.prioridad_sugerida
+                                : ""
+                            )
+                        );
+                    } else {
+                        agregarTextoHistorialIA(
+                            tarjeta,
+                            "Confirmación sin sugerencia de IA vinculada."
+                        );
+                    }
+
+                    agregarTextoHistorialIA(
+                        tarjeta,
+                        "Nota: " + (atencion.motivo_cambio || "Sin nota")
+                    );
+
+                    cajaHistorialIA.appendChild(tarjeta);
+                });
+            }
+
+            const titulo = document.createElement("h3");
+            titulo.textContent = "Sugerencias experimentales de IA";
+            cajaHistorialIA.appendChild(titulo);
+
+            const sugerencias = historial.sugerencias_ia || [];
+
+            if (sugerencias.length === 0) {
+                agregarTextoHistorialIA(
+                    cajaHistorialIA,
+                    "Este paciente no tiene sugerencias de IA guardadas."
+                );
+                return;
+            }
+
+            sugerencias.forEach(sugerencia => {
+                const tarjeta = document.createElement("article");
+                tarjeta.className = "entry";
+
+                agregarTextoHistorialIA(
+                    tarjeta,
+                    "Atención: " + sugerencia.atencion_id
+                );
+
+                agregarTextoHistorialIA(
+                    tarjeta,
+                    "Prioridad experimental sugerida: " +
+                    sugerencia.prioridad_sugerida
+                );
+
+                agregarTextoHistorialIA(
+                    tarjeta,
+                    "Explicación: " + sugerencia.explicacion
+                );
+
+                agregarTextoHistorialIA(
+                    tarjeta,
+                    "Modelo: " + sugerencia.modelo
+                );
+
+                agregarTextoHistorialIA(
+                    tarjeta,
+                    "Solicitada por: " + sugerencia.solicitada_por
+                );
+
+                agregarTextoHistorialIA(
+                    tarjeta,
+                    "Fecha: " + sugerencia.fecha_creacion
+                );
+
+                cajaHistorialIA.appendChild(tarjeta);
+            });
+
+        } catch (error) {
+            if (numeroConsulta !== consultaHistorialIA) return;
+
+            cajaHistorialIA.replaceChildren();
+
+            agregarTextoHistorialIA(
+                cajaHistorialIA,
+                "No se pudieron consultar las sugerencias: " + error.message
+            );
+        }
+    }
+);
+
+// Limpiar el historial visual cuando se sale del panel.
+document.getElementById("salir").addEventListener("click", function() {
+    consultaHistorialIA++;
+    cajaHistorialIA.replaceChildren();
+});
+</script>
+
+</body></html>
