@@ -5,7 +5,7 @@ WORKDIR /app
 COPY academico/backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY academico/backend/main.py academico/backend/panel.html ./
+COPY academico/backend/main.py academico/backend/panel.html academico/backend/esi_investigacion.py ./
 
 EXPOSE 8000
 
