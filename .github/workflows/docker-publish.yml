@@ -1,3 +1,4 @@
+
 name: MediTriage CI/CD
 
 on:
@@ -12,13 +13,10 @@ on:
   workflow_dispatch:
 
 jobs:
-
   quality:
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -35,17 +33,16 @@ jobs:
         run: echo "SAST completado"
 
   build-and-push:
-
     needs: quality
-
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -56,20 +53,41 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Instalar Cosign
+        uses: sigstore/cosign-installer@v3
+
       - name: Build and Push
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ghcr.io/ginalef-ui/meditriage-backend:${{ github.sha }}
 
+      - name: Firmar imagen
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          IMAGE="ghcr.io/ginalef-ui/meditriage-backend@$DIGEST"
+          cosign sign --yes "$IMAGE"
+
+      - name: Verificar firma
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          IMAGE="ghcr.io/ginalef-ui/meditriage-backend@$DIGEST"
+
+          cosign verify \
+            --certificate-identity \
+            "https://github.com/ginalef-ui/MediTriage/.github/workflows/docker-publish.yml@refs/heads/main" \
+            --certificate-oidc-issuer \
+            "https://token.actions.githubusercontent.com" \
+            "$IMAGE"
+
   promote:
-
     needs: build-and-push
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Actualizar GitOps
         run: echo "Promoción de imagen completada"
