@@ -367,4 +367,190 @@ document.getElementById("salir").addEventListener("click", function() {
 });
 </script>
 
+
+<script>
+// meditriage-motor-esi-investigacion
+// No modifica la prioridad ni la cola.
+
+function instalarBotonesMotorInvestigacion() {
+    document.querySelectorAll("#pendientes form.confirmar").forEach(form => {
+        if (form.dataset.motorInstalado === "si") return;
+
+        form.dataset.motorInstalado = "si";
+
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "secondary";
+        boton.textContent = "Evaluar reglas de investigación";
+
+        const resultado = document.createElement("p");
+        resultado.className = "muted";
+        resultado.setAttribute("role", "status");
+
+        boton.addEventListener("click", async () => {
+            boton.disabled = true;
+            resultado.textContent = "Revisando los datos registrados...";
+
+            try {
+                const preparacion = await api(
+                    "/atenciones/" + form.dataset.id + "/preparar-analisis"
+                );
+
+                const datos = preparacion.datos;
+
+                const caso = {
+                    confirmo_caso_ficticio: true,
+                    edad_anos: datos.edad_anos ?? null,
+                    intervencion_inmediata:
+                        datos.intervencion_inmediata ?? null,
+                    situacion_alto_riesgo:
+                        datos.situacion_alto_riesgo ?? null,
+                    alteracion_conciencia_nueva:
+                        datos.alteracion_conciencia_nueva ?? null,
+                    dolor_o_malestar_intenso:
+                        datos.dolor_o_malestar_intenso ?? null,
+                    recursos_previstos:
+                        datos.recursos_previstos ?? null,
+                    pulsaciones: datos.pulsaciones ?? null,
+                    frecuencia_respiratoria:
+                        datos.frecuencia_respiratoria ?? null,
+                    saturacion_oxigeno:
+                        datos.saturacion_oxigeno ?? null
+                };
+
+                const respuesta = await api(
+                    "/investigacion/esi",
+                    {
+                        method: "POST",
+                        body: JSON.stringify(caso)
+                    }
+                );
+
+                const evaluacion = respuesta.resultado;
+
+                const prioridad = evaluacion.prioridad === null
+                    ? "Sin prioridad propuesta"
+                    : "Nivel parcial: " + evaluacion.prioridad;
+
+                resultado.textContent =
+                    "INVESTIGACIÓN, SOLO DATOS FICTICIOS. " +
+                    prioridad + ". Estado: " +
+                    evaluacion.estado + ". " +
+                    evaluacion.detalle +
+                    " No modifica la prioridad confirmada.";
+
+            } catch (error) {
+                resultado.textContent =
+                    "No se pudo completar la evaluación: " +
+                    error.message;
+            } finally {
+                boton.disabled = false;
+            }
+        });
+
+        form.appendChild(boton);
+        form.parentElement.appendChild(resultado);
+    });
+}
+
+const observadorMotorInvestigacion = new MutationObserver(
+    instalarBotonesMotorInvestigacion
+);
+
+observadorMotorInvestigacion.observe(
+    document.getElementById("pendientes"),
+    { childList: true, subtree: true }
+);
+
+instalarBotonesMotorInvestigacion();
+</script>
+
+
+<script>
+// meditriage-extraccion-texto-ia
+// Investigacion con datos ficticios. No modifica la prioridad.
+
+function instalarBotonesExtraccionTexto() {
+    document.querySelectorAll("#pendientes form.confirmar").forEach(form => {
+        if (form.dataset.extraccionInstalada === "si") return;
+
+        form.dataset.extraccionInstalada = "si";
+
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "secondary";
+        boton.textContent = "Revisar texto con IA";
+
+        const resultado = document.createElement("p");
+        resultado.className = "muted";
+        resultado.setAttribute("role", "status");
+
+        boton.addEventListener("click", async () => {
+            boton.disabled = true;
+            resultado.textContent = "Consultando al modelo local...";
+
+            try {
+                const preparacion = await api(
+                    "/atenciones/" + form.dataset.id + "/preparar-analisis"
+                );
+
+                const respuesta = await api(
+                    "/investigacion/extraer-texto",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            confirmo_caso_ficticio: true,
+                            texto: preparacion.datos.sintomas
+                        })
+                    }
+                );
+
+                const fragmentos = respuesta.fragmentos_propuestos || [];
+
+                if (fragmentos.length === 0) {
+                    resultado.textContent =
+                        "La IA no propuso fragmentos. " +
+                        "Esto no significa que no existan síntomas.";
+                    return;
+                }
+
+                const lista = fragmentos.map(item => {
+                    const literal = item.aparece_literalmente
+                        ? "aparece en el texto"
+                        : "no aparece literalmente";
+
+                    return '"' + item.texto + '" (' + literal + ")";
+                }).join("; ");
+
+                resultado.textContent =
+                    "IA experimental (" + respuesta.modelo + "): " +
+                    lista +
+                    ". Revisa el texto original: la IA puede omitir " +
+                    "negaciones o información. No asigna prioridad.";
+
+            } catch (error) {
+                resultado.textContent =
+                    "No se pudo revisar el texto: " + error.message;
+            } finally {
+                boton.disabled = false;
+            }
+        });
+
+        form.appendChild(boton);
+        form.parentElement.appendChild(resultado);
+    });
+}
+
+const observadorExtraccionTexto = new MutationObserver(
+    instalarBotonesExtraccionTexto
+);
+
+observadorExtraccionTexto.observe(
+    document.getElementById("pendientes"),
+    { childList: true, subtree: true }
+);
+
+instalarBotonesExtraccionTexto();
+</script>
+
 </body></html>
