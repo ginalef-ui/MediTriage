@@ -1,0 +1,20 @@
+services:
+  consumidor:
+    build:
+      context: .
+      dockerfile: academico/consumidor/Dockerfile
+
+    container_name: meditriage-academico-consumidor
+
+    environment:
+      DATABASE_URL: "postgresql://meditriage:demo_local@postgres:5432/meditriage"
+      KAFKA_SERVIDOR: "kafka:19092"
+      KAFKA_TOPIC: "meditriage.eventos"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+    restart: unless-stopped

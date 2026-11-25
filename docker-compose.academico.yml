@@ -1,0 +1,20 @@
+﻿services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: meditriage-academico-db
+    environment:
+      POSTGRES_DB: meditriage
+      POSTGRES_USER: meditriage
+      POSTGRES_PASSWORD: demo_local
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - meditriage_academico_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meditriage -d meditriage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  meditriage_academico_data:
